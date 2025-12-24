@@ -138,11 +138,8 @@ Vietcombank N.V.A 123456789`);
 
   /* ===== START GAME ===== */
   if (text === "🎲 Game xúc xắc") {
-  // Reset các bước rút tiền nếu có
-  user.step = "bet";
-  user.withdrawAmount = 0;
-  user.withdrawInfo = "";
-
+  user.step = null;    // reset step cũ (nếu đang rút tiền)
+  user.step = "bet";   // bước đặt cược mới
   return bot.sendMessage(chatId,
 `💵 NHẬP TIỀN CƯỢC
 📌 VD: 10,000 → nhập 10000
@@ -170,11 +167,12 @@ Vietcombank N.V.A 123456789`);
   }
 
   if (text === "🎮 Chơi tiếp") {
-    user.step = "bet";
-    return bot.sendMessage(chatId,
+  user.step = null;   // reset step cũ
+  user.step = "bet";
+  return bot.sendMessage(chatId,
 "💵 Nhập tiền cược mới", {
       reply_markup: { remove_keyboard: true }
-    });
+});
   }
 
   if (text === "🏠 Menu chính") {
