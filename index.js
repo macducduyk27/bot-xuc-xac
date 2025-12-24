@@ -257,24 +257,28 @@ Tổng điểm: ${total}`);
 
   /* ===== Xác nhận rút tiền ===== */
   if (q.data === "confirm_withdraw") {
-    user.balance -= user.withdrawAmount;
-    withdrawRequests.push({
-      id: chatId,
-      amount: user.withdrawAmount,
-      info: user.withdrawInfo,
-      status: "pending"
-    });
-    user.step = null;
+  const userName = q.from?.username || q.from?.first_name || "User"; // Lấy tên user
 
-    await bot.editMessageText(`✅ Hệ thống đã ghi nhận đơn rút tiền của bạn
+  // Trừ tiền và lưu yêu cầu
+  user.balance -= user.withdrawAmount;
+  withdrawRequests.push({
+    id: chatId,
+    name: userName,
+    amount: user.withdrawAmount,
+    info: user.withdrawInfo,
+    status: "pending"
+  });
+  user.step = null;
+
+  await bot.editMessageText(`✅ Hệ thống đã ghi nhận đơn rút tiền của bạn
 
 👉 Bạn vui lòng đợi trong giây lát, chúng tôi sẽ tiến hành chuyển tiền cho bạn`, {
-      chat_id: chatId,
-      message_id: q.message.message_id
-    });
+    chat_id: chatId,
+    message_id: q.message.message_id
+  });
 
-    return mainMenu(chatId);
-  }
+  return mainMenu(chatId);
+}
 
   if (q.data === "cancel_withdraw") {
     user.step = null;
