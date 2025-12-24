@@ -248,37 +248,41 @@ if (q.data === "small" || q.data === "big") {
   });
 }
 
-// ===== Xúc xúc xắc =====
-if (text === "🎲 Xúc" && user.step === "roll") {
-  const dice = await bot.sendDice(chatId);
-  user.dices.push(dice.dice.value);
+// ===== Xúc xúc xắc (callback button + delay 3 giây) =====
+if (q.data === "roll_dice" && user.step === "roll") {
+    const now = Date.now();
+    if (user.lastRollTime && now - user.lastRollTime < 3000) {
+        return bot.answerCallbackQuery(q.id, { text: "⏱ Vui lòng chờ 3 giây trước khi xúc tiếp", show_alert: true });
+    }
+    user.lastRollTime = now;
 
-  if (user.dices.length < 3) {
-    return bot.sendMessage(chatId, `🎲 Đã xúc ${user.dices.length}/3\n👉 Bấm 🎲 Xúc tiếp`, {
-      reply_markup: {
-        keyboard: [["🎲 Xúc tiếp"]],
-        resize_keyboard: true,
-        one_time_keyboard: true
-      }
-    });
-  }
+    const dice = await bot.sendDice(chatId);
+    user.dices.push(dice.dice.value);
 
-  // Xúc đủ 3 lần → tính kết quả
-  const total = user.dices.reduce((a, b) => a + b, 0);
-  const win = (user.choice === "small" && total <= 10) || (user.choice === "big" && total >= 11);
-  let change = win ? Math.floor(user.betAmount * HOUSE_RATE) : user.betAmount;
-  user.balance += win ? change : -change;
+    if (user.dices.length < 3) {
+        return bot.sendMessage(chatId, `🎲 Đã xúc ${user.dices.length}/3\n👉 Bấm 🎲 Xúc tiếp`, {
+            reply_markup: {
+                inline_keyboard: [[{ text: "🎲 Xúc tiếp", callback_data: "roll_dice" }]]
+            }
+        });
+    }
 
-  await bot.sendMessage(chatId,
+    // Xúc đủ 3 lần → tính kết quả
+    const total = user.dices.reduce((a, b) => a + b, 0);
+    const win = (user.choice === "small" && total <= 10) || (user.choice === "big" && total >= 11);
+    const change = win ? Math.floor(user.betAmount * HOUSE_RATE) : user.betAmount;
+    user.balance += win ? change : -change;
+
+    await bot.sendMessage(chatId,
 `🎲 KẾT QUẢ XÚC XẮC
 👤 ID: ${chatId}
 🎯 Cửa: ${win ? "Thắng" : "Thua"}
 💰 Số dư: ${user.balance.toLocaleString()} VND
 Tổng điểm: ${total}`);
 
-  // Gửi log cho admin
-  ADMINS.forEach(aid => {
-    bot.sendMessage(aid,
+    // Gửi log cho admin
+    ADMINS.forEach(aid => {
+        bot.sendMessage(aid,
 `📊 LOG PHIÊN XÚC XẮC
 👤 ID USER: ${chatId}
 💵 Tiền cược: ${user.betAmount.toLocaleString()} VND
@@ -287,10 +291,10 @@ Tổng điểm: ${total}`);
 📌 Kết quả: ${win ? "THẮNG" : "THUA"}
 💸 ${win ? "+" : "-"}${change.toLocaleString()} VND
 💰 Số dư còn lại: ${user.balance.toLocaleString()} VND`);
-  });
+    });
 
-  resetUserState(user);
-  return mainMenu(chatId);
+    resetUserState(user);
+    return mainMenu(chatId);
 }
 
   // ===== Xác nhận rút tiền =====
