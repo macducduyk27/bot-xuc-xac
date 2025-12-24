@@ -186,8 +186,9 @@ bot.on("callback_query", async (q) => {
   const user = users[chatId];
 
   /* ===== Chọn cửa game ===== */
-  if (text === "🔽 Nhỏ (3–10)" || text === "🔼 Lớn (11–18)") {
-  user.choice = text.includes("Nhỏ") ? "small" : "big";
+  // sửa tất cả text === "..." thành q.data === "..."
+if (q.data === "small" || q.data === "big") {
+  user.choice = q.data;  // "small" hoặc "big"
   user.dices = [];
   user.playing = true;
 
@@ -282,26 +283,24 @@ if (q.data === "confirm_withdraw") {
     });
     user.step = null;
 
+    // Thông báo user
     await bot.editMessageText(`✅ Hệ thống đã ghi nhận đơn rút tiền của bạn
-
 👉 Bạn vui lòng đợi trong giây lát, chúng tôi sẽ tiến hành chuyển tiền cho bạn`, {
-    chat_id: chatId,
-    message_id: q.message.message_id
-  });
-
-  return mainMenu(chatId);
-}
-
-  if (q.data === "cancel_withdraw") {
-    user.step = null;
-    await bot.editMessageText(`❌ Bạn đã huỷ yêu cầu rút tiền`, {
       chat_id: chatId,
       message_id: q.message.message_id
     });
-    return mainMenu(chatId);
-  }
-});
 
+    // 🔹 Thông báo admin
+    ADMINS.forEach(aid => {
+      bot.sendMessage(aid,
+`📢 YÊU CẦU RÚT TIỀN
+👤 ID: ${chatId}
+💰 Số tiền: ${user.withdrawAmount.toLocaleString()} VND
+🏧 Ngân hàng & STK: ${user.withdrawInfo}`);
+    });
+
+    return mainMenu(chatId);
+}
 /* ================== LỆNH ADMIN NẠP TIỀN ================== */
 bot.onText(/\/naptien (\d+) (\d+)/, (msg, m) => {
   if (!ADMINS.includes(msg.chat.id)) return;
