@@ -21,7 +21,7 @@ const withdrawRequests = [];
 function initUser(id) {
   if (!users[id]) {
     users[id] = {
-      balance: 0, // ✅ BẮT ĐẦU = 0
+      balance: 0,
       step: null,
       betAmount: 0,
       choice: null,
@@ -53,7 +53,6 @@ bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
   initUser(chatId);
 
-  // Gửi tin nhắn chào mừng
   bot.sendMessage(chatId,
 `🎉 CHÀO MỪNG BẠN ĐẾN VỚI GAME XÚC XẮC 🎉
 
@@ -93,47 +92,50 @@ bot.on("message", async (msg) => {
     return bot.sendMessage(chatId,
 `💰 ${user.balance.toLocaleString()} VND`);
   }
-/* ===== RÚT TIỀN ===== */
-if (text === "💸 Rút tiền") {
-  user.step = "withdraw_amount";
-  return bot.sendMessage(chatId,
+
+  /* ===== RÚT TIỀN ===== */
+  if (text === "💸 Rút tiền") {
+    user.step = "withdraw_amount";
+    return bot.sendMessage(chatId,
 `✅ Số Tiền Rút Tối Thiểu Là: 50000 vnđ
 
 🏧 Bạn nhập số tiền rút ở dưới nha
 Ví dụ: rút 50,000VND sẽ nhập 50000`);
-}
+  }
 
-if (user.step === "withdraw_amount") {
-  const amount = parseInt(text);
-  if (isNaN(amount) || amount < 50000) return bot.sendMessage(chatId, "❌ Số tiền rút tối thiểu 50,000 VND");
-  if (amount > user.balance) return bot.sendMessage(chatId, "❌ Số dư không đủ");
+  if (user.step === "withdraw_amount") {
+    const amount = parseInt(text);
+    if (isNaN(amount) || amount < 50000) return bot.sendMessage(chatId, "❌ Số tiền rút tối thiểu 50,000 VND");
+    if (amount > user.balance) return bot.sendMessage(chatId, "❌ Số dư không đủ");
 
-  user.withdrawAmount = amount;
-  user.step = "withdraw_info";
+    user.withdrawAmount = amount;
+    user.step = "withdraw_info";
 
-  return bot.sendMessage(chatId,
+    return bot.sendMessage(chatId,
 `Bạn vui lòng nhập:
 tên ngân hàng + họ và tên + STK
 
 ✅ Ví dụ:
 Vietcombank N.V.A 123456789`);
-}
+  }
 
-if (user.step === "withdraw_info") {
-  user.withdrawInfo = text;
-  user.step = "withdraw_confirm";
+  if (user.step === "withdraw_info") {
+    user.withdrawInfo = text;
+    user.step = "withdraw_confirm";
 
-  return bot.sendMessage(chatId,
+    return bot.sendMessage(chatId,
 `Bạn có chắc chắn rút: ${user.withdrawAmount.toLocaleString()} đ
 
 ❎ Lưu ý: Chỉ Nhấn Nút Để Thực Hiện`, {
-    reply_markup: {
-      inline_keyboard: [
-        [{ text: "✅ Chắc chắn", callback_data: "confirm_withdraw" }],
-        [{ text: "❌ Huỷ lệnh", callback_data: "cancel_withdraw" }]
-      ]
-    }
-  });
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "✅ Chắc chắn", callback_data: "confirm_withdraw" }],
+          [{ text: "❌ Huỷ lệnh", callback_data: "cancel_withdraw" }]
+        ]
+      }
+    });
+  }
+
   /* ===== START GAME ===== */
   if (text === "🎲 Game xúc xắc") {
     user.step = "bet";
@@ -163,46 +165,6 @@ if (user.step === "withdraw_info") {
     });
   }
 
-  /* ===== XÚC ===== */
-  if (text === "🎲 Xúc" && user.playing) {
-    const dice = await bot.sendDice(chatId);
-    user.dices.push(dice.dice.value);
-
-    if (user.dices.length < 3) {
-      return bot.sendMessage(chatId,
-`🎲 Đã xúc ${user.dices.length}/3
-👉 Bấm 🎲 Xúc tiếp`);
-    }
-
-    const total = user.dices.reduce((a, b) => a + b, 0);
-    const win =
-      (user.choice === "small" && total <= 10) ||
-      (user.choice === "big" && total >= 11);
-
-    let change;
-    if (win) {
-      change = Math.floor(user.betAmount * HOUSE_RATE);
-      user.balance += change;
-    } else {
-      change = user.betAmount;
-      user.balance -= change;
-    }
-
-    user.playing = false;
-    user.dices = [];
-    user.step = null;
-
-    return bot.sendMessage(chatId,
-`🎲 KẾT QUẢ: ${total}
-${win ? "🎉 THẮNG" : "❌ THUA"}
-💰 Số dư: ${user.balance.toLocaleString()} VND`, {
-      reply_markup: {
-        keyboard: [["🎮 Chơi tiếp"], ["🏠 Menu chính"]],
-        resize_keyboard: true
-      }
-    });
-  }
-
   if (text === "🎮 Chơi tiếp") {
     user.step = "bet";
     return bot.sendMessage(chatId,
@@ -214,19 +176,6 @@ ${win ? "🎉 THẮNG" : "❌ THUA"}
   if (text === "🏠 Menu chính") {
     return mainMenu(chatId);
   }
-});
-// ===== LOG GỬI ADMIN =====
-ADMINS.forEach(aid => {
-  bot.sendMessage(aid,
-`📊 LOG PHIÊN XÚC XẮC
-
-👤 ID USER: ${chatId}
-💵 Tiền cược: ${user.betAmount.toLocaleString()} VND
-🎯 Cửa chọn: ${user.choice === "small" ? "Nhỏ" : "Lớn"}
-🎲 Tổng điểm: ${total}
-📌 Kết quả: ${win ? "THẮNG" : "THUA"}
-💸 ${win ? "+" : "-"}${change.toLocaleString()} VND
-💰 Số dư còn lại: ${user.balance.toLocaleString()} VND`);
 });
 
 /* ================== CALLBACK ================== */
@@ -274,13 +223,24 @@ bot.on("callback_query", async (q) => {
       user.balance -= change;
     }
 
+    // Gửi log cho admin **ngay trong scope này**
+    ADMINS.forEach(aid => {
+      bot.sendMessage(aid,
+`📊 LOG PHIÊN XÚC XẮC
+👤 ID USER: ${chatId}
+💵 Tiền cược: ${user.betAmount.toLocaleString()} VND
+🎯 Kết quả: ${win ? "THẮNG" : "THUA"}
+💸 ${win ? "+" : "-"}${change.toLocaleString()} VND
+💰 Số dư còn lại: ${user.balance.toLocaleString()} VND`);
+    });
+
     // Reset trạng thái game
     user.playing = false;
     user.dices = [];
     user.step = null;
     user.choice = null;
 
-    // Hiển thị kết quả theo yêu cầu
+    // Hiển thị kết quả
     await bot.sendMessage(chatId,
 `🎲 KẾT QUẢ XÚC XẮC
 👤 ID: ${chatId}
@@ -293,7 +253,6 @@ Tổng điểm: ${total}`);
 
   /* ===== Xác nhận rút tiền ===== */
   if (q.data === "confirm_withdraw") {
-    // Trừ tiền và lưu yêu cầu
     user.balance -= user.withdrawAmount;
     withdrawRequests.push({
       id: chatId,
@@ -322,7 +281,8 @@ Tổng điểm: ${total}`);
     return mainMenu(chatId);
   }
 });
-/* ===== LỆNH ADMIN RÚT TIỀN ===== */
+
+/* ================== ADMIN RÚT TIỀN ================== */
 bot.onText(/\/ruttien (\d+)/, (msg, m) => {
   if (!ADMINS.includes(msg.chat.id)) return;
 
