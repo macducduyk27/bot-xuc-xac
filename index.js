@@ -54,14 +54,18 @@ bot.onText(/\/start/, (msg) => {
   initUser(chatId);
 
   bot.sendMessage(chatId,
-`🎉 CHÀO MỪNG ĐẾN GAME XÚC XẮC 🎉
+`🎉 CHÀO MỪNG BẠN ĐẾN VỚI GAME XÚC XẮC 🎉
 
-📌 Nhập tiền cược VD:
-👉 10,000 VND → nhập: 10000
+🎲 Trò chơi giải trí minh bạch – công bằng
+💰 Thắng thua cập nhật số dư tức thì
+🔒 Hệ thống tự động – bảo mật
 
-⚠️ BOT CHỈ CÓ 1 ADMIN:
-👉 @admxucxactele`
-  );
+⚠️ LƯU Ý:
+BOT chỉ có 1 ADMIN DUY NHẤT: @admxucxactele  
+Ngoài tài khoản trên, tất cả đều là giả mạo.
+
+👉 Chọn chức năng bên dưới để bắt đầu 🍀`
+);
 
   mainMenu(chatId);
 });
