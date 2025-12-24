@@ -181,26 +181,25 @@ Vietcombank N.V.A 123456789`);
 });
 
 /* ================== CALLBACK ================== */
+/* ================== CALLBACK ================== */
 bot.on("callback_query", async (q) => {
   const chatId = q.message.chat.id;
   const user = users[chatId];
 
-  /* ===== Chọn cửa game ===== */
+  // ===== Chọn cửa game =====
   if (q.data === "small" || q.data === "big") {
-    user.choice = q.data;  // "small" hoặc "big"
+    user.choice = q.data; // "small" hoặc "big"
     user.dices = [];
     user.playing = true;
 
     return bot.sendMessage(chatId, "🎲 BẤM NÚT DƯỚI ĐỂ XÚC (3 LẦN)", {
       reply_markup: {
-        keyboard: [["🎲 Xúc"]],
-        resize_keyboard: true,
-        one_time_keyboard: true
+        inline_keyboard: [[{ text: "🎲 Xúc", callback_data: "roll_dice" }]]
       }
     });
   }
 
-  /* ===== Xúc xúc xắc ===== */
+  // ===== Xúc xúc xắc =====
   if (q.data === "roll_dice" && user.playing) {
     const dice = await bot.sendDice(chatId);
     user.dices.push(dice.dice.value);
@@ -208,9 +207,7 @@ bot.on("callback_query", async (q) => {
     if (user.dices.length < 3) {
       return bot.sendMessage(chatId, `🎲 Đã xúc ${user.dices.length}/3\n👉 Bấm 🎲 Xúc tiếp`, {
         reply_markup: {
-          keyboard: [["🎲 Xúc tiếp"]],
-          resize_keyboard: true,
-          one_time_keyboard: true
+          inline_keyboard: [[{ text: "🎲 Xúc tiếp", callback_data: "roll_dice" }]]
         }
       });
     }
@@ -256,6 +253,47 @@ Tổng điểm: ${total}`);
 
     return mainMenu(chatId);
   }
+
+  // ===== Xác nhận rút tiền =====
+  if (q.data === "confirm_withdraw") {
+    // Trừ tiền và lưu yêu cầu
+    user.balance -= user.withdrawAmount;
+    withdrawRequests.push({
+      id: chatId,
+      amount: user.withdrawAmount,
+      info: user.withdrawInfo,
+      status: "pending"
+    });
+    user.step = null;
+
+    // Thông báo user
+    await bot.editMessageText(`✅ Hệ thống đã ghi nhận đơn rút tiền của bạn
+👉 Bạn vui lòng đợi trong giây lát, chúng tôi sẽ tiến hành chuyển tiền cho bạn`, {
+      chat_id: chatId,
+      message_id: q.message.message_id
+    });
+
+    // Thông báo admin
+    ADMINS.forEach(aid => {
+      bot.sendMessage(aid,
+`📢 YÊU CẦU RÚT TIỀN
+👤 ID: ${chatId}
+💰 Số tiền: ${user.withdrawAmount.toLocaleString()} VND
+🏧 Ngân hàng & STK: ${user.withdrawInfo}`);
+    });
+
+    return mainMenu(chatId);
+  }
+
+  if (q.data === "cancel_withdraw") {
+    user.step = null;
+    await bot.editMessageText(`❌ Bạn đã huỷ yêu cầu rút tiền`, {
+      chat_id: chatId,
+      message_id: q.message.message_id
+    });
+    return mainMenu(chatId);
+  }
+});
 
   /* ===== Xác nhận rút tiền ===== */
   if (q.data === "confirm_withdraw") {
