@@ -134,7 +134,6 @@ if (user.step === "withdraw_info") {
       ]
     }
   });
-}
   /* ===== START GAME ===== */
   if (text === "🎲 Game xúc xắc") {
     user.step = "bet";
