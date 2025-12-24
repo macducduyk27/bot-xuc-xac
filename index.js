@@ -182,26 +182,6 @@ Vietcombank N.V.A 123456789`);
 bot.on("callback_query", async (q) => {
   const chatId = q.message.chat.id;
   const user = users[chatId];
-  });
-
-/* ================== LỆNH ADMIN NẠP TIỀN ================== */
-bot.onText(/\/naptien (\d+) (\d+)/, (msg, m) => {
-  if (!ADMINS.includes(msg.chat.id)) return;
-
-  const userId = parseInt(m[1]);   // ID user nhận tiền
-  const amount = parseInt(m[2]);   // Số tiền nạp
-
-  initUser(userId);                // Khởi tạo user nếu chưa có
-  users[userId].balance += amount; // Cộng tiền vào balance
-
-  // Thông báo user
-  bot.sendMessage(userId,
-`🎉 Bạn được nạp ${amount.toLocaleString()} VND`);
-
-  // Thông báo admin
-  bot.sendMessage(msg.chat.id,
-`✅ Đã nạp tiền cho ID ${userId}`);
-});
 
   /* ===== Chọn cửa game ===== */
   if (q.data === "small" || q.data === "big") {
@@ -302,6 +282,24 @@ Tổng điểm: ${total}`);
   }
 });
 
+/* ================== LỆNH ADMIN NẠP TIỀN ================== */
+bot.onText(/\/naptien (\d+) (\d+)/, (msg, m) => {
+  if (!ADMINS.includes(msg.chat.id)) return;
+
+  const userId = parseInt(m[1]);   // ID user nhận tiền
+  const amount = parseInt(m[2]);   // Số tiền nạp
+
+  initUser(userId);                // Khởi tạo user nếu chưa có
+  users[userId].balance += amount; // Cộng tiền vào balance
+
+  // Thông báo user
+  bot.sendMessage(userId,
+`🎉 Bạn được nạp ${amount.toLocaleString()} VND`);
+
+  // Thông báo admin
+  bot.sendMessage(msg.chat.id,
+`✅ Đã nạp tiền cho ID ${userId}`);
+});
 /* ================== ADMIN RÚT TIỀN ================== */
 bot.onText(/\/ruttien (\d+)/, (msg, m) => {
   if (!ADMINS.includes(msg.chat.id)) return;
