@@ -249,28 +249,30 @@ if (q.data === "small" || q.data === "big") {
 }
 
 // ===== Xúc xúc xắc (callback button + delay 3 giây) =====
-if (q.data === "roll_dice" && user.step === "roll") {
+if (q.data === "roll_dice" && user.playing) {
+    if (!user.lastRollTime) user.lastRollTime = 0;
     const now = Date.now();
-    if (user.lastRollTime && now - user.lastRollTime < 3000) {
+
+    if (now - user.lastRollTime < 3000) {
         return bot.answerCallbackQuery(q.id, { text: "⏱ Vui lòng chờ 3 giây trước khi xúc tiếp", show_alert: true });
     }
     user.lastRollTime = now;
 
+    // Gửi icon xúc xắc Telegram
     const dice = await bot.sendDice(chatId);
     user.dices.push(dice.dice.value);
 
     if (user.dices.length < 3) {
-        return bot.sendMessage(chatId, `🎲 Đã xúc ${user.dices.length}/3\n👉 Bấm 🎲 Xúc tiếp`, {
-            reply_markup: {
-                inline_keyboard: [[{ text: "🎲 Xúc tiếp", callback_data: "roll_dice" }]]
-            }
-        });
+        // Nút xúc tiếp vẫn là inline button
+        return bot.editMessageReplyMarkup({
+            inline_keyboard: [[{ text: "🎲 Xúc tiếp", callback_data: "roll_dice" }]]
+        }, { chat_id: chatId, message_id: q.message.message_id });
     }
 
     // Xúc đủ 3 lần → tính kết quả
     const total = user.dices.reduce((a, b) => a + b, 0);
     const win = (user.choice === "small" && total <= 10) || (user.choice === "big" && total >= 11);
-    const change = win ? Math.floor(user.betAmount * HOUSE_RATE) : user.betAmount;
+    let change = win ? Math.floor(user.betAmount * HOUSE_RATE) : user.betAmount;
     user.balance += win ? change : -change;
 
     await bot.sendMessage(chatId,
@@ -280,7 +282,7 @@ if (q.data === "roll_dice" && user.step === "roll") {
 💰 Số dư: ${user.balance.toLocaleString()} VND
 Tổng điểm: ${total}`);
 
-    // Gửi log cho admin
+    // Log admin
     ADMINS.forEach(aid => {
         bot.sendMessage(aid,
 `📊 LOG PHIÊN XÚC XẮC
@@ -296,7 +298,6 @@ Tổng điểm: ${total}`);
     resetUserState(user);
     return mainMenu(chatId);
 }
-
   // ===== Xác nhận rút tiền =====
   if (q.data === "confirm_withdraw") {
     withdrawRequests.push({
