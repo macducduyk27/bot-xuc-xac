@@ -158,59 +158,25 @@ Vietcombank N.V.A 123456789`);
     });
   }
 
-  // Xử lý nhập tiền cược
-if (user.step === "bet") {
+  if (user.step === "bet") {
     const amount = parseInt(text);
     if (isNaN(amount) || amount < 5000 || amount > 10000000)
-        return bot.sendMessage(chatId, "❌ Số tiền không hợp lệ");
+      return bot.sendMessage(chatId, "❌ Số tiền không hợp lệ");
     if (amount > user.balance)
-        return bot.sendMessage(chatId, "❌ Số dư không đủ");
+      return bot.sendMessage(chatId, "❌ Số dư không đủ");
 
     user.betAmount = amount;
-    user.step = "choose"; // chuyển sang bước chọn Nhỏ/Lớn
+    user.step = "choose";
 
-    // Hiển thị bàn phím chọn Lớn/Nhỏ
-    return bot.sendMessage(chatId, "👉 Chọn cửa Lớn/Nhỏ dưới bàn phím", {
-        reply_markup: {
-            keyboard: [
-                ["🔽 Nhỏ (3–10)", "🔼 Lớn (11–18)"]
-            ],
-            resize_keyboard: true,
-            one_time_keyboard: true
-        }
+    return bot.sendMessage(chatId, "👉 Chọn cửa", {
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "🔽 Nhỏ (3–10)", callback_data: "small" }],
+          [{ text: "🔼 Lớn (11–18)", callback_data: "big" }]
+        ]
+      }
     });
-}
-// Xử lý chọn Nhỏ/Lớn
-if (user.step === "choose") {
-    if (text === "🔽 Nhỏ (3–10)" || text === "🔼 Lớn (11–18)") {
-        user.choice = text.includes("Nhỏ") ? "small" : "big";
-        user.dices = [];
-        user.playing = true;
-        user.step = "roll";
-
-        // Hiển thị nút Xúc dưới chat
-        return bot.sendMessage(chatId, "🎲 BẤM NÚT DƯỚI ĐỂ XÚC (3 LẦN)", {
-            reply_markup: {
-                keyboard: [["🎲 Xúc"]],
-                resize_keyboard: true,
-                one_time_keyboard: true
-            }
-        });
-    } else {
-        return bot.sendMessage(chatId, "❌ Vui lòng chọn Lớn hoặc Nhỏ dưới bàn phím");
-    }
-}
-
-// ===== Lệnh khác =====
-if (text === "🎮 Chơi tiếp") {
-    user.step = "bet";
-    return bot.sendMessage(chatId,
-        "💵 Nhập tiền cược mới", { reply_markup: { remove_keyboard: true } });
-}
-
-if (text === "🏠 Menu chính") {
-    return mainMenu(chatId);
-}
+  }
 
   if (text === "🎮 Chơi tiếp") {
     user.step = "bet";
@@ -232,49 +198,44 @@ bot.on("callback_query", async (q) => {
   const user = users[chatId];
 
   // ===== Chọn cửa game =====
-if (q.data === "small" || q.data === "big") {
-  user.choice = q.data;
-  user.dices = [];
-  user.playing = true;
-  user.step = "roll"; // đặt step roll
-
-  // Hiển thị nút Xúc dưới chat
-  return bot.sendMessage(chatId, "🎲 BẤM NÚT DƯỚI ĐỂ XÚC (3 LẦN)", {
-    reply_markup: {
-      keyboard: [["🎲 Xúc"]],
-      resize_keyboard: true,
-      one_time_keyboard: true
+if ((q.data === "small" || q.data === "big")) {
+    if (user.choice) {
+        // Nếu đã chọn rồi → không cho thay đổi
+        return bot.answerCallbackQuery(q.id, { text: "❌ Bạn đã chọn cửa rồi, không thể thay đổi!", show_alert: true });
     }
-  });
+
+    // Chọn lần đầu → chấp nhận
+    user.choice = q.data;
+    user.dices = [];
+    user.playing = true;
+    user.step = "roll"; // bước roll xúc xắc
+
+    return bot.sendMessage(chatId, "🎲 BẤM NÚT DƯỚI ĐỂ XÚC (3 LẦN)", {
+        reply_markup: {
+            inline_keyboard: [[{ text: "🎲 Xúc", callback_data: "roll_dice" }]]
+        }
+    });
 }
 
-// ===== Xúc xúc xắc (callback button + delay 3 giây) =====
-if (q.data === "roll_dice" && user.playing) {
-    if (!user.lastRollTime) user.lastRollTime = 0;
-    const now = Date.now();
-
-    if (now - user.lastRollTime < 3000) {
-        return bot.answerCallbackQuery(q.id, { text: "⏱ Vui lòng chờ 3 giây trước khi xúc tiếp", show_alert: true });
-    }
-    user.lastRollTime = now;
-
-    // Gửi icon xúc xắc Telegram
+  // ===== Xúc xúc xắc =====
+  if (q.data === "roll_dice" && user.playing) {
     const dice = await bot.sendDice(chatId);
     user.dices.push(dice.dice.value);
 
     if (user.dices.length < 3) {
-        // Nút xúc tiếp vẫn là inline button
-        return bot.editMessageReplyMarkup({
-            inline_keyboard: [[{ text: "🎲 Xúc tiếp", callback_data: "roll_dice" }]]
-        }, { chat_id: chatId, message_id: q.message.message_id });
+      return bot.sendMessage(chatId, `🎲 Đã xúc ${user.dices.length}/3\n👉 Bấm 🎲 Xúc tiếp`, {
+        reply_markup: {
+          inline_keyboard: [[{ text: "🎲 Xúc tiếp", callback_data: "roll_dice" }]]
+        }
+      });
     }
 
-    // Xúc đủ 3 lần → tính kết quả
     const total = user.dices.reduce((a, b) => a + b, 0);
     const win = (user.choice === "small" && total <= 10) || (user.choice === "big" && total >= 11);
     let change = win ? Math.floor(user.betAmount * HOUSE_RATE) : user.betAmount;
     user.balance += win ? change : -change;
 
+    // Gửi kết quả cho user
     await bot.sendMessage(chatId,
 `🎲 KẾT QUẢ XÚC XẮC
 👤 ID: ${chatId}
@@ -282,9 +243,9 @@ if (q.data === "roll_dice" && user.playing) {
 💰 Số dư: ${user.balance.toLocaleString()} VND
 Tổng điểm: ${total}`);
 
-    // Log admin
+    // Gửi log cho admin
     ADMINS.forEach(aid => {
-        bot.sendMessage(aid,
+      bot.sendMessage(aid,
 `📊 LOG PHIÊN XÚC XẮC
 👤 ID USER: ${chatId}
 💵 Tiền cược: ${user.betAmount.toLocaleString()} VND
@@ -297,7 +258,8 @@ Tổng điểm: ${total}`);
 
     resetUserState(user);
     return mainMenu(chatId);
-}
+  }
+
   // ===== Xác nhận rút tiền =====
   if (q.data === "confirm_withdraw") {
     withdrawRequests.push({
