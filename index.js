@@ -138,12 +138,16 @@ Vietcombank N.V.A 123456789`);
 
   /* ===== START GAME ===== */
   if (text === "🎲 Game xúc xắc") {
-    user.step = "bet";
-    return bot.sendMessage(chatId,
+  // Reset các bước rút tiền nếu có
+  user.step = "bet";
+  user.withdrawAmount = 0;
+  user.withdrawInfo = "";
+
+  return bot.sendMessage(chatId,
 `💵 NHẬP TIỀN CƯỢC
 📌 VD: 10,000 → nhập 10000
 (min 5,000 – max 10,000,000)`);
-  }
+}
 
   if (user.step === "bet") {
     const amount = parseInt(text);
