@@ -323,6 +323,7 @@ Tổng điểm: ${total}`);
     return mainMenu(chatId);
   }
 });
+/* ===== LỆNH ADMIN RÚT TIỀN ===== */
 bot.onText(/\/ruttien (\d+)/, (msg, m) => {
   if (!ADMINS.includes(msg.chat.id)) return;
 
