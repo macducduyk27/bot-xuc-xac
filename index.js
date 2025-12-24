@@ -158,25 +158,52 @@ Vietcombank N.V.A 123456789`);
     });
   }
 
-  if (user.step === "bet") {
+  // ===== Xử lý nhập tiền cược =====
+if (user.step === "bet") {
     const amount = parseInt(text);
     if (isNaN(amount) || amount < 5000 || amount > 10000000)
-      return bot.sendMessage(chatId, "❌ Số tiền không hợp lệ");
+        return bot.sendMessage(chatId, "❌ Số tiền không hợp lệ");
     if (amount > user.balance)
-      return bot.sendMessage(chatId, "❌ Số dư không đủ");
+        return bot.sendMessage(chatId, "❌ Số dư không đủ");
 
     user.betAmount = amount;
-    user.step = "choose";
+    user.step = "choose"; // chuyển sang bước chọn Nhỏ/Lớn
 
-    return bot.sendMessage(chatId, "👉 Chọn cửa", {
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: "🔽 Nhỏ (3–10)", callback_data: "small" }],
-          [{ text: "🔼 Lớn (11–18)", callback_data: "big" }]
-        ]
-      }
-    });
-  }
+    // Hướng dẫn user chọn Nhỏ/Lớn
+    return bot.sendMessage(chatId, "👉 Chọn cửa Lớn/Nhỏ dưới bàn phím");
+}
+
+// ===== Xử lý chọn Nhỏ/Lớn =====
+if (user.step === "choose") {
+    if (text === "🔽 Nhỏ (3–10)" || text === "🔼 Lớn (11–18)") {
+        user.choice = text.includes("Nhỏ") ? "small" : "big";
+        user.dices = [];
+        user.playing = true;
+        user.step = "roll";
+
+        // Hiển thị nút Xúc dưới chat
+        return bot.sendMessage(chatId, "🎲 BẤM NÚT DƯỚI ĐỂ XÚC (3 LẦN)", {
+            reply_markup: {
+                keyboard: [["🎲 Xúc"]],
+                resize_keyboard: true,
+                one_time_keyboard: true
+            }
+        });
+    } else {
+        return bot.sendMessage(chatId, "❌ Vui lòng chọn Lớn hoặc Nhỏ dưới bàn phím");
+    }
+}
+
+// ===== Lệnh khác =====
+if (text === "🎮 Chơi tiếp") {
+    user.step = "bet";
+    return bot.sendMessage(chatId,
+        "💵 Nhập tiền cược mới", { reply_markup: { remove_keyboard: true } });
+}
+
+if (text === "🏠 Menu chính") {
+    return mainMenu(chatId);
+}
 
   if (text === "🎮 Chơi tiếp") {
     user.step = "bet";
