@@ -158,7 +158,7 @@ Vietcombank N.V.A 123456789`);
     });
   }
 
-  // ===== Xử lý nhập tiền cược =====
+  // Xử lý nhập tiền cược
 if (user.step === "bet") {
     const amount = parseInt(text);
     if (isNaN(amount) || amount < 5000 || amount > 10000000)
@@ -169,11 +169,18 @@ if (user.step === "bet") {
     user.betAmount = amount;
     user.step = "choose"; // chuyển sang bước chọn Nhỏ/Lớn
 
-    // Hướng dẫn user chọn Nhỏ/Lớn
-    return bot.sendMessage(chatId, "👉 Chọn cửa Lớn/Nhỏ dưới bàn phím");
+    // Hiển thị bàn phím chọn Lớn/Nhỏ
+    return bot.sendMessage(chatId, "👉 Chọn cửa Lớn/Nhỏ dưới bàn phím", {
+        reply_markup: {
+            keyboard: [
+                ["🔽 Nhỏ (3–10)", "🔼 Lớn (11–18)"]
+            ],
+            resize_keyboard: true,
+            one_time_keyboard: true
+        }
+    });
 }
-
-// ===== Xử lý chọn Nhỏ/Lớn =====
+// Xử lý chọn Nhỏ/Lớn
 if (user.step === "choose") {
     if (text === "🔽 Nhỏ (3–10)" || text === "🔼 Lớn (11–18)") {
         user.choice = text.includes("Nhỏ") ? "small" : "big";
