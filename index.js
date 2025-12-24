@@ -88,7 +88,46 @@ bot.on("message", async (msg) => {
     return bot.sendMessage(chatId,
 `💰 ${user.balance.toLocaleString()} VND`);
   }
+/* ===== RÚT TIỀN ===== */
+if (text === "💸 Rút tiền") {
+  user.step = "withdraw_amount";
+  return bot.sendMessage(chatId,
+`💸 RÚT TIỀN
+✅ Tối thiểu: 50,000 VND
+🏧 Nhập số tiền muốn rút`);
+}
 
+if (user.step === "withdraw_amount") {
+  const amount = parseInt(text);
+  if (isNaN(amount) || amount < 50000)
+    return bot.sendMessage(chatId, "❌ Số tiền rút tối thiểu 50,000 VND");
+  if (amount > user.balance)
+    return bot.sendMessage(chatId, "❌ Số dư không đủ");
+
+  user.withdrawAmount = amount;
+  user.step = "withdraw_info";
+
+  return bot.sendMessage(chatId,
+`📄 Nhập thông tin ngân hàng
+Ví dụ:
+Vietcombank N.V.A 123456789`);
+}
+
+if (user.step === "withdraw_info") {
+  user.withdrawInfo = text;
+  user.step = "withdraw_confirm";
+
+  return bot.sendMessage(chatId,
+`⚠️ XÁC NHẬN RÚT TIỀN
+💰 ${user.withdrawAmount.toLocaleString()} VND`, {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: "✅ Chắc chắn", callback_data: "confirm_withdraw" }],
+        [{ text: "⬅️ Quay lại", callback_data: "cancel_withdraw" }]
+      ]
+    }
+  });
+}
   /* ===== START GAME ===== */
   if (text === "🎲 Game xúc xắc") {
     user.step = "bet";
@@ -169,6 +208,19 @@ ${win ? "🎉 THẮNG" : "❌ THUA"}
   if (text === "🏠 Menu chính") {
     return mainMenu(chatId);
   }
+});
+// ===== LOG GỬI ADMIN =====
+ADMINS.forEach(aid => {
+  bot.sendMessage(aid,
+`📊 LOG PHIÊN XÚC XẮC
+
+👤 ID USER: ${chatId}
+💵 Tiền cược: ${user.betAmount.toLocaleString()} VND
+🎯 Cửa chọn: ${user.choice === "small" ? "Nhỏ" : "Lớn"}
+🎲 Tổng điểm: ${total}
+📌 Kết quả: ${win ? "THẮNG" : "THUA"}
+💸 ${win ? "+" : "-"}${change.toLocaleString()} VND
+💰 Số dư còn lại: ${user.balance.toLocaleString()} VND`);
 });
 
 /* ================== CALLBACK ================== */
