@@ -186,44 +186,61 @@ bot.on("callback_query", async (q) => {
   const user = users[chatId];
 
   /* ===== Chọn cửa game ===== */
-  if (q.data === "small" || q.data === "big") {
-    user.choice = q.data;
-    user.dices = [];
-    user.playing = true;
+  if (text === "🔽 Nhỏ (3–10)" || text === "🔼 Lớn (11–18)") {
+  user.choice = text.includes("Nhỏ") ? "small" : "big";
+  user.dices = [];
+  user.playing = true;
 
-    return bot.sendMessage(chatId,
-      "🎲 BẤM NÚT DƯỚI ĐỂ XÚC (3 LẦN)", {
-        reply_markup: {
-          inline_keyboard: [[{ text: "🎲 Xúc", callback_data: "roll_dice" }]]
-        }
-      }
-    );
-  }
+  return bot.sendMessage(chatId, "🎲 BẤM NÚT DƯỚI ĐỂ XÚC (3 LẦN)", {
+    reply_markup: {
+      keyboard: [["🎲 Xúc"]],
+      resize_keyboard: true,
+      one_time_keyboard: true
+    }
+  });
+}
 
   /* ===== Xúc xúc xắc ===== */
-  if (q.data === "roll_dice" && user.playing) {
-    const dice = await bot.sendDice(chatId);
-    user.dices.push(dice.dice.value);
+ if ((text === "🎲 Xúc" || text === "🎲 Xúc tiếp") && user.playing) {
+  const dice = await bot.sendDice(chatId);
+  user.dices.push(dice.dice.value);
 
-    if (user.dices.length < 3) {
-      return bot.sendMessage(chatId, `🎲 Đã xúc ${user.dices.length}/3\n👉 Bấm 🎲 Xúc tiếp`, {
-        reply_markup: {
-          inline_keyboard: [[{ text: "🎲 Xúc tiếp", callback_data: "roll_dice" }]]
-        }
-      });
-    }
+  if (user.dices.length < 3) {
+    return bot.sendMessage(chatId, `🎲 Đã xúc ${user.dices.length}/3\n👉 Bấm 🎲 Xúc tiếp`, {
+      reply_markup: {
+        keyboard: [["🎲 Xúc tiếp"]],
+        resize_keyboard: true,
+        one_time_keyboard: true
+      }
+    });
+  }
 
-    // Kết quả
-    const total = user.dices.reduce((a, b) => a + b, 0);
-    const win = (user.choice === "small" && total <= 10) || (user.choice === "big" && total >= 11);
-    let change;
-    if (win) {
-      change = Math.floor(user.betAmount * HOUSE_RATE);
-      user.balance += change;
-    } else {
-      change = user.betAmount;
-      user.balance -= change;
-    }
+  // khi xúc xong 3 lần
+  const total = user.dices.reduce((a, b) => a + b, 0);
+  const win = (user.choice === "small" && total <= 10) || (user.choice === "big" && total >= 11);
+  let change;
+  if (win) {
+    change = Math.floor(user.betAmount * HOUSE_RATE);
+    user.balance += change;
+  } else {
+    change = user.betAmount;
+    user.balance -= change;
+  }
+
+  user.playing = false;
+  user.dices = [];
+  user.step = null;
+  user.choice = null;
+
+  await bot.sendMessage(chatId,
+`🎲 KẾT QUẢ XÚC XẮC
+👤 ID: ${chatId}
+🎯 Cửa: ${win ? "Thắng" : "Thua"}
+💰 Số dư: ${user.balance.toLocaleString()} VND
+Tổng điểm: ${total}`);
+
+  return mainMenu(chatId);
+}
 
     // Gửi log cho admin **ngay trong scope này**
     ADMINS.forEach(aid => {
