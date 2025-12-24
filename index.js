@@ -33,6 +33,16 @@ function initUser(id) {
   }
 }
 
+function resetUserState(user) {
+  user.step = null;
+  user.choice = null;
+  user.dices = [];
+  user.playing = false;
+  user.betAmount = 0;
+  user.withdrawAmount = 0;
+  user.withdrawInfo = "";
+}
+
 /* ================== MENU ================== */
 function mainMenu(chatId) {
   bot.sendMessage(chatId, "🎮 MENU CHÍNH", {
@@ -73,7 +83,7 @@ Ngoài tài khoản trên, **tất cả đều là giả mạo**.
 /* ================== MESSAGE ================== */
 bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
-  const text = msg.text;
+  const text = msg.text.replace(/,/g,''); // Loại bỏ dấu phẩy
   initUser(chatId);
   const user = users[chatId];
 
@@ -138,13 +148,15 @@ Vietcombank N.V.A 123456789`);
 
   /* ===== START GAME ===== */
   if (text === "🎲 Game xúc xắc") {
-  user.step = null;    // reset step cũ (nếu đang rút tiền)
-  user.step = "bet";   // bước đặt cược mới
-  return bot.sendMessage(chatId,
+    resetUserState(user); // reset mọi state cũ
+    user.step = "bet";   // bước đặt cược mới
+    return bot.sendMessage(chatId,
 `💵 NHẬP TIỀN CƯỢC
 📌 VD: 10,000 → nhập 10000
-(min 5,000 – max 10,000,000)`);
-}
+(min 5,000 – max 10,000,000)`, {
+      reply_markup: { remove_keyboard: true }
+    });
+  }
 
   if (user.step === "bet") {
     const amount = parseInt(text);
@@ -167,12 +179,11 @@ Vietcombank N.V.A 123456789`);
   }
 
   if (text === "🎮 Chơi tiếp") {
-  user.step = null;   // reset step cũ
-  user.step = "bet";
-  return bot.sendMessage(chatId,
+    user.step = "bet";
+    return bot.sendMessage(chatId,
 "💵 Nhập tiền cược mới", {
       reply_markup: { remove_keyboard: true }
-});
+    });
   }
 
   if (text === "🏠 Menu chính") {
@@ -181,17 +192,16 @@ Vietcombank N.V.A 123456789`);
 });
 
 /* ================== CALLBACK ================== */
-/* ================== CALLBACK ================== */
 bot.on("callback_query", async (q) => {
   const chatId = q.message.chat.id;
+  initUser(chatId);
   const user = users[chatId];
 
   // ===== Chọn cửa game =====
   if (q.data === "small" || q.data === "big") {
-    user.choice = q.data; // "small" hoặc "big"
+    user.choice = q.data;
     user.dices = [];
     user.playing = true;
-
     return bot.sendMessage(chatId, "🎲 BẤM NÚT DƯỚI ĐỂ XÚC (3 LẦN)", {
       reply_markup: {
         inline_keyboard: [[{ text: "🎲 Xúc", callback_data: "roll_dice" }]]
@@ -212,17 +222,10 @@ bot.on("callback_query", async (q) => {
       });
     }
 
-    // Khi xúc xong 3 lần
     const total = user.dices.reduce((a, b) => a + b, 0);
     const win = (user.choice === "small" && total <= 10) || (user.choice === "big" && total >= 11);
-    let change;
-    if (win) {
-      change = Math.floor(user.betAmount * HOUSE_RATE);
-      user.balance += change;
-    } else {
-      change = user.betAmount;
-      user.balance -= change;
-    }
+    let change = win ? Math.floor(user.betAmount * HOUSE_RATE) : user.betAmount;
+    user.balance += win ? change : -change;
 
     // Gửi kết quả cho user
     await bot.sendMessage(chatId,
@@ -245,35 +248,26 @@ Tổng điểm: ${total}`);
 💰 Số dư còn lại: ${user.balance.toLocaleString()} VND`);
     });
 
-    // Reset trạng thái game
-    user.playing = false;
-    user.dices = [];
-    user.step = null;
-    user.choice = null;
-
+    resetUserState(user);
     return mainMenu(chatId);
   }
 
   // ===== Xác nhận rút tiền =====
   if (q.data === "confirm_withdraw") {
-    // Trừ tiền và lưu yêu cầu
-    user.balance -= user.withdrawAmount;
     withdrawRequests.push({
       id: chatId,
       amount: user.withdrawAmount,
       info: user.withdrawInfo,
       status: "pending"
     });
-    user.step = null;
+    user.balance -= user.withdrawAmount;
 
-    // Thông báo user
     await bot.editMessageText(`✅ Hệ thống đã ghi nhận đơn rút tiền của bạn
 👉 Bạn vui lòng đợi trong giây lát, chúng tôi sẽ tiến hành chuyển tiền cho bạn`, {
       chat_id: chatId,
       message_id: q.message.message_id
     });
 
-    // Thông báo admin
     ADMINS.forEach(aid => {
       bot.sendMessage(aid,
 `📢 YÊU CẦU RÚT TIỀN
@@ -282,164 +276,37 @@ Tổng điểm: ${total}`);
 🏧 Ngân hàng & STK: ${user.withdrawInfo}`);
     });
 
+    resetUserState(user);
     return mainMenu(chatId);
   }
 
   if (q.data === "cancel_withdraw") {
-    user.step = null;
     await bot.editMessageText(`❌ Bạn đã huỷ yêu cầu rút tiền`, {
       chat_id: chatId,
       message_id: q.message.message_id
     });
+    resetUserState(user);
     return mainMenu(chatId);
   }
 });
 
-  /* ===== Xác nhận rút tiền ===== */
-  if (q.data === "confirm_withdraw") {
-    // Trừ tiền và lưu yêu cầu
-    user.balance -= user.withdrawAmount;
-    withdrawRequests.push({
-      id: chatId,
-      amount: user.withdrawAmount,
-      info: user.withdrawInfo,
-      status: "pending"
-    });
-    user.step = null;
-
-    // Thông báo user
-    await bot.editMessageText(`✅ Hệ thống đã ghi nhận đơn rút tiền của bạn
-👉 Bạn vui lòng đợi trong giây lát, chúng tôi sẽ tiến hành chuyển tiền cho bạn`, {
-      chat_id: chatId,
-      message_id: q.message.message_id
-    });
-
-    // 🔹 Thông báo admin
-    ADMINS.forEach(aid => {
-      bot.sendMessage(aid,
-`📢 YÊU CẦU RÚT TIỀN
-👤 ID: ${chatId}
-💰 Số tiền: ${user.withdrawAmount.toLocaleString()} VND
-🏧 Ngân hàng & STK: ${user.withdrawInfo}`);
-    });
-
-    return mainMenu(chatId);
-  }
-
-  if (q.data === "cancel_withdraw") {
-    user.step = null;
-    await bot.editMessageText(`❌ Bạn đã huỷ yêu cầu rút tiền`, {
-      chat_id: chatId,
-      message_id: q.message.message_id
-    });
-    return mainMenu(chatId);
-  }
-
-  // Xử lý nút xúc/xúc tiếp bằng callback_data "roll_dice"
-  if ((q.data === "roll_dice") && user.playing) {
-    const dice = await bot.sendDice(chatId);
-    user.dices.push(dice.dice.value);
-
-    if (user.dices.length < 3) {
-      return bot.sendMessage(chatId, `🎲 Đã xúc ${user.dices.length}/3\n👉 Bấm 🎲 Xúc tiếp`, {
-        reply_markup: {
-          keyboard: [["🎲 Xúc tiếp"]],
-          resize_keyboard: true,
-          one_time_keyboard: true
-        }
-      });
-    }
-
-    const total = user.dices.reduce((a, b) => a + b, 0);
-    const win = (user.choice === "small" && total <= 10) || (user.choice === "big" && total >= 11);
-    let change;
-    if (win) {
-      change = Math.floor(user.betAmount * HOUSE_RATE);
-      user.balance += change;
-    } else {
-      change = user.betAmount;
-      user.balance -= change;
-    }
-
-    // Gửi kết quả cho user
-    await bot.sendMessage(chatId,
-`🎲 KẾT QUẢ XÚC XẮC
-👤 ID: ${chatId}
-🎯 Cửa: ${win ? "Thắng" : "Thua"}
-💰 Số dư: ${user.balance.toLocaleString()} VND
-Tổng điểm: ${total}`);
-
-    // Gửi log cho admin
-    ADMINS.forEach(aid => {
-      bot.sendMessage(aid,
-`📊 LOG PHIÊN XÚC XẮC
-👤 ID USER: ${chatId}
-💵 Tiền cược: ${user.betAmount.toLocaleString()} VND
-🎯 Cửa chọn: ${user.choice === "small" ? "Nhỏ" : "Lớn"}
-🎲 Tổng điểm: ${total}
-📌 Kết quả: ${win ? "THẮNG" : "THUA"}
-💸 ${win ? "+" : "-"}${change.toLocaleString()} VND
-💰 Số dư còn lại: ${user.balance.toLocaleString()} VND`);
-    });
-
-    // Reset trạng thái
-    user.playing = false;
-    user.dices = [];
-    user.step = null;
-    user.choice = null;
-
-    return mainMenu(chatId);
-  }
-});
-
-  /* ===== Xác nhận rút tiền ===== */
-if (q.data === "confirm_withdraw") {
-    // Trừ tiền và lưu yêu cầu
-    user.balance -= user.withdrawAmount;
-    withdrawRequests.push({
-      id: chatId,
-      amount: user.withdrawAmount,
-      info: user.withdrawInfo,
-      status: "pending"
-    });
-    user.step = null;
-
-    // Thông báo user
-    await bot.editMessageText(`✅ Hệ thống đã ghi nhận đơn rút tiền của bạn
-👉 Bạn vui lòng đợi trong giây lát, chúng tôi sẽ tiến hành chuyển tiền cho bạn`, {
-      chat_id: chatId,
-      message_id: q.message.message_id
-    });
-
-    // 🔹 Thông báo admin
-    ADMINS.forEach(aid => {
-      bot.sendMessage(aid,
-`📢 YÊU CẦU RÚT TIỀN
-👤 ID: ${chatId}
-💰 Số tiền: ${user.withdrawAmount.toLocaleString()} VND
-🏧 Ngân hàng & STK: ${user.withdrawInfo}`);
-    });
-
-    return mainMenu(chatId);
-}
 /* ================== LỆNH ADMIN NẠP TIỀN ================== */
 bot.onText(/\/naptien (\d+) (\d+)/, (msg, m) => {
   if (!ADMINS.includes(msg.chat.id)) return;
 
-  const userId = parseInt(m[1]);   // ID user nhận tiền
-  const amount = parseInt(m[2]);   // Số tiền nạp
+  const userId = parseInt(m[1]);
+  const amount = parseInt(m[2]);
 
-  initUser(userId);                // Khởi tạo user nếu chưa có
-  users[userId].balance += amount; // Cộng tiền vào balance
+  initUser(userId);
+  users[userId].balance += amount;
 
-  // Thông báo user
   bot.sendMessage(userId,
 `🎉 Bạn được nạp ${amount.toLocaleString()} VND`);
 
-  // Thông báo admin
   bot.sendMessage(msg.chat.id,
 `✅ Đã nạp tiền cho ID ${userId}`);
 });
+
 /* ================== ADMIN RÚT TIỀN ================== */
 bot.onText(/\/ruttien (\d+)/, (msg, m) => {
   if (!ADMINS.includes(msg.chat.id)) return;
