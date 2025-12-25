@@ -110,12 +110,12 @@ bot.on("message", async (msg) => {
 `✅ Số Tiền Rút Tối Thiểu Là: 50000 vnđ
 
 🏧 Bạn nhập số tiền rút ở dưới nha
-Ví dụ: rút 50,000VND sẽ nhập 50000`);
+Ví dụ: rút 100,000VND sẽ nhập 100000`);
   }
 
   if (user.step === "withdraw_amount") {
     const amount = parseInt(text);
-    if (isNaN(amount) || amount < 50000) return bot.sendMessage(chatId, "❌ Số tiền rút tối thiểu 50,000 VND");
+    if (isNaN(amount) || amount < 100000) return bot.sendMessage(chatId, "❌ Số tiền rút tối thiểu 100,000 VND");
     if (amount > user.balance) return bot.sendMessage(chatId, "❌ Số dư không đủ");
 
     user.withdrawAmount = amount;
