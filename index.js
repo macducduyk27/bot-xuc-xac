@@ -153,14 +153,14 @@ Vietcombank N.V.A 123456789`);
     return bot.sendMessage(chatId,
 `💵 NHẬP TIỀN CƯỢC
 📌 VD: 10,000 → nhập 10000
-(min 5,000 – max 10,000,000)`, {
+(min 5,000 – không giới hạn)`, {
       reply_markup: { remove_keyboard: true }
     });
   }
 
   if (user.step === "bet") {
     const amount = parseInt(text);
-    if (isNaN(amount) || amount < 5000 || amount > 10000000)
+    if (isNaN(amount) || amount < 5000)
       return bot.sendMessage(chatId, "❌ Số tiền không hợp lệ");
     if (amount > user.balance)
       return bot.sendMessage(chatId, "❌ Số dư không đủ");
