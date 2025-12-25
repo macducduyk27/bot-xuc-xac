@@ -107,10 +107,10 @@ bot.on("message", async (msg) => {
   if (text === "💸 Rút tiền") {
     user.step = "withdraw_amount";
     return bot.sendMessage(chatId,
-`✅ Số Tiền Rút Tối Thiểu Là: 50000 vnđ
+`✅ Số Tiền Rút Tối Thiểu Là: 100,000 VND
 
 🏧 Bạn nhập số tiền rút ở dưới nha
-Ví dụ: rút 100,000VND sẽ nhập 100000`);
+Ví dụ: rút 100,000 VND sẽ nhập 100000`);
   }
 
   if (user.step === "withdraw_amount") {
