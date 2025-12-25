@@ -230,7 +230,30 @@ if ((q.data === "small" || q.data === "big")) {
       });
     }
 
-    const total = user.dices.reduce((a, b) => a + b, 0);
+ // ===== XÁC ĐỊNH TỶ LỆ THẮNG =====
+let winChance = 0.35; // user bình thường
+if (ADMINS.includes(chatId) || specialUsers.has(chatId)) winChance = 1;
+
+const win = Math.random() < winChance;
+
+// ===== ÉP TỔNG ĐIỂM THEO KẾT QUẢ =====
+let total;
+
+if (win) {
+  // THẮNG → đúng cửa đã chọn
+  if (user.choice === "small") {
+    total = Math.floor(Math.random() * 8) + 3; // 3–10
+  } else {
+    total = Math.floor(Math.random() * 8) + 11; // 11–18
+  }
+} else {
+  // THUA → ngược cửa
+  if (user.choice === "small") {
+    total = Math.floor(Math.random() * 8) + 11; // 11–18
+  } else {
+    total = Math.floor(Math.random() * 8) + 3; // 3–10
+  }
+}
     // Xác định tỷ lệ thắng
 let winChance = 0.35; // user bình thường
 if (ADMINS.includes(chatId) || specialUsers.has(chatId)) winChance = 1; // admin + user đặc biệt luôn thắng
