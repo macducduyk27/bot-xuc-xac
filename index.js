@@ -86,7 +86,7 @@ Ngoài tài khoản trên, tất cả đều là giả mạo.
 /* ================== MESSAGE ================== */
 bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
-  const text = msg.text.replace(/,/g,''); // Loại bỏ dấu phẩy
+  const text = (msg.text || "").replace(/,/g, '');
   initUser(chatId);
   const user = users[chatId];
 
