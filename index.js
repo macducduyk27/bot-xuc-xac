@@ -97,9 +97,10 @@ bot.on("message", async (msg) => {
   }
 
   if (text === "💳 Nạp tiền") {
-    return bot.sendMessage(chatId,
-"👉 Liên hệ admin: @admxucxactele");
-  }
+  return bot.sendMessage(chatId,
+`👉 Liên hệ admin: @admxucxactele để nạp tiền vào BOT
+Trả lời 24/24. Khi nhắn báo số tiền muốn nạp luôn để tránh mất thời gian.`);
+}
 
   if (text === "💰 Số dư") {
     return bot.sendMessage(chatId,
