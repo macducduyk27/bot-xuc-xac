@@ -95,7 +95,8 @@ bot.on("message", async (msg) => {
 
   if (text === "💳 Nạp tiền") {
     return bot.sendMessage(chatId,
-"👉 Liên hệ admin: @admxucxactele");
+"👉 Liên hệ admin: @admxucxactele
+     Để được nạp tiền vào tài khoản");
   }
 
   if (text === "💰 Số dư") {
