@@ -71,9 +71,12 @@ bot.onText(/\/start/, (msg) => {
 🔒 Hệ thống tự động – bảo mật
 
 ⚠️ LƯU Ý:
-BOT chỉ có **01 ADMIN DUY NHẤT**: @admxucxactele  
-Ngoài tài khoản trên, **tất cả đều là giả mạo**.
+BOT chỉ có 1 ADMIN DUY NHẤT: @admxucxactele  
+Ngoài tài khoản trên, tất cả đều là giả mạo.
 
+🎁 ƯU ĐÃI NGƯỜI DÙNG MỚI
+👉 Tặng ngay 20,000 VND
+📩 Nhắn ngay @admxucxactele để nhận 20,000 VND tiền trải nghiệm.
 👉 Chọn chức năng bên dưới để bắt đầu 🍀`
   );
 
