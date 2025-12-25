@@ -235,8 +235,8 @@ if ((q.data === "small" || q.data === "big")) {
 
     const total = user.dices.reduce((a, b) => a + b, 0);
     const win = (user.choice === "small" && total <= 10) || (user.choice === "big" && total >= 11);
-    let change = win ? Math.floor(user.betAmount * HOUSE_RATE) : user.betAmount;
-    user.balance += win ? change : -change;
+    let change = user.betAmount;
+user.balance += win ? change : -change;
 
     // Gửi kết quả cho user
     await bot.sendMessage(chatId,
