@@ -231,11 +231,30 @@ if ((q.data === "small" || q.data === "big")) {
     }
 
     const total = user.dices.reduce((a, b) => a + b, 0);
-    // Xác định tỷ lệ thắng
-let winChance = 0.35; // user bình thường
-if (ADMINS.includes(chatId) || specialUsers.has(chatId)) winChance = 1; // admin + user đặc biệt luôn thắng
+   // ===== TỶ LỆ THẮNG =====
+let winChance = 0.30; // user bình thường 30%
+if (ADMINS.includes(chatId) || specialUsers.has(chatId)) winChance = 1;
 
 const win = Math.random() < winChance;
+
+// ===== ÉP KẾT QUẢ THEO THẮNG / THUA =====
+let total;
+
+if (win) {
+  // thắng → ra đúng cửa
+  if (user.choice === "small") {
+    total = Math.floor(Math.random() * 8) + 3; // 3–10
+  } else {
+    total = Math.floor(Math.random() * 8) + 11; // 11–18
+  }
+} else {
+  // thua → ra ngược cửa
+  if (user.choice === "small") {
+    total = Math.floor(Math.random() * 8) + 11; // 11–18
+  } else {
+    total = Math.floor(Math.random() * 8) + 3; // 3–10
+  }
+}
     let change = win ? Math.floor(user.betAmount * HOUSE_RATE) : user.betAmount;
     user.balance += win ? change : -change;
 
