@@ -17,7 +17,6 @@ const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 /* ================== DATABASE (RAM) ================== */
 const users = {};
 const withdrawRequests = [];
-const specialUsers = new Set(); // danh sách user đặc biệt
 
 function initUser(id) {
   if (!users[id]) {
@@ -95,9 +94,10 @@ bot.on("message", async (msg) => {
   }
 
   if (text === "💳 Nạp tiền") {
-  return bot.sendMessage(chatId,
-"👉 Liên hệ admin: @admxucxactele\n      Để được nạp tiền vào tài khoản. Trả lời 24/24");
-}
+    return bot.sendMessage(chatId,
+"👉 Liên hệ admin: @admxucxactele");
+  }
+
   if (text === "💰 Số dư") {
     return bot.sendMessage(chatId,
 `💰 ${user.balance.toLocaleString()} VND`);
@@ -230,30 +230,8 @@ if ((q.data === "small" || q.data === "big")) {
       });
     }
 
-   // ===== TỶ LỆ THẮNG =====
-let winChance = 0.30; // user bình thường 30%
-if (ADMINS.includes(chatId) || specialUsers.has(chatId)) winChance = 1;
-
-const win = Math.random() < winChance;
-
-// ===== ÉP KẾT QUẢ THEO THẮNG / THUA =====
-let total;
-
-if (win) {
-  // thắng → ra đúng cửa
-  if (user.choice === "small") {
-    total = Math.floor(Math.random() * 8) + 3; // 3–10
-  } else {
-    total = Math.floor(Math.random() * 8) + 11; // 11–18
-  }
-} else {
-  // thua → ra ngược cửa
-  if (user.choice === "small") {
-    total = Math.floor(Math.random() * 8) + 11; // 11–18
-  } else {
-    total = Math.floor(Math.random() * 8) + 3; // 3–10
-  }
-}
+    const total = user.dices.reduce((a, b) => a + b, 0);
+    const win = (user.choice === "small" && total <= 10) || (user.choice === "big" && total >= 11);
     let change = win ? Math.floor(user.betAmount * HOUSE_RATE) : user.betAmount;
     user.balance += win ? change : -change;
 
@@ -354,27 +332,4 @@ bot.onText(/\/ruttien (\d+)/, (msg, m) => {
 Bạn kiểm tra tài khoản xem nhé`);
 
   bot.sendMessage(msg.chat.id, `✅ Đã thực hiện rút tiền cho ID ${userId}`);
-});
-
-// ===== Cấp quyền User Đặc Biệt =====
-bot.onText(/\/setSpecial (\d+)/, (msg, match) => {
-  if (!ADMINS.includes(msg.chat.id)) return;
-
-  const userId = parseInt(match[1]);
-  specialUsers.add(userId);
-
-  initUser(userId); // đảm bảo user tồn tại
-  bot.sendMessage(userId, "🎉 Bạn đã trở thành User Đặc Biệt! Tỷ lệ thắng của bạn là 100%");
-  bot.sendMessage(msg.chat.id, `✅ ID ${userId} đã được cấp quyền User Đặc Biệt`);
-});
-
-// ===== Thu hồi quyền User Đặc Biệt =====
-bot.onText(/\/revokeSpecial (\d+)/, (msg, match) => {
-  if (!ADMINS.includes(msg.chat.id)) return;
-
-  const userId = parseInt(match[1]);
-  specialUsers.delete(userId);
-
-  bot.sendMessage(userId, "⚠️ Quyền User Đặc Biệt của bạn đã bị thu hồi. Bạn trở lại User bình thường, tỷ lệ thắng 35%");
-  bot.sendMessage(msg.chat.id, `✅ ID ${userId} đã bị thu hồi quyền User Đặc Biệt`);
 });
