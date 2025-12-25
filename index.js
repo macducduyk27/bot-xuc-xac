@@ -240,6 +240,7 @@ if ((q.data === "small" || q.data === "big")) {
 `🎲 KẾT QUẢ XÚC XẮC
 👤 ID: ${chatId}
 🎯 Cửa: ${win ? "Thắng" : "Thua"}
+📊 Kết quả: ${win ? "+" : "-"} ${change.toLocaleString()} VND
 💰 Số dư: ${user.balance.toLocaleString()} VND
 Tổng điểm: ${total}`);
 
