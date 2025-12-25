@@ -78,8 +78,9 @@ Ngoài tài khoản trên, tất cả đều là giả mạo.
 👉 Tặng ngay 20,000 VND
 📩 Nhắn ngay @admxucxactele để nhận 20,000 VND tiền trải nghiệm.
 
-📘 CHƯA BIẾT CÁCH CHƠI?
+📌 HƯỚNG DẪN & THÔNG TIN
 👉 Gõ hoặc bấm: /huongdanchoi để xem hướng dẫn chi tiết.
+👉 Gõ /uudai để xem toàn bộ ưu đãi.
 👉 Chọn chức năng bên dưới để bắt đầu 🍀`
   );
 
@@ -424,4 +425,28 @@ bot.onText(/\/huongdanchoi/, (msg) => {
 
 🍀 Chúc bạn chơi vui & may mắn! 🍀`
   );
+});
+bot.onText(/\/uudai/, (msg) => {
+  const chatId = msg.chat.id;
+
+  bot.sendMessage(chatId,
+`🎁 ƯU ĐÃI BOT XÚC XẮC 🎁
+
+🎉 ƯU ĐÃI NGƯỜI DÙNG MỚI
+👉 Tặng ngay 20,000 VND tiền trải nghiệm
+📩 Nhắn @admxucxactele để nhận
+
+💰 ƯU ĐÃI NẠP LẦN ĐẦU
+🔥 Nạp lần đầu được +50% số tiền
+
+📌 Ví dụ:
+• Nạp 100,000 ➝ Nhận 150,000
+• Nạp 200,000 ➝ Nhận 300,000
+
+⚠️ Lưu ý:
+• Chỉ áp dụng cho lần nạp đầu tiên
+• Tiền cộng sau khi admin xác nhận
+
+📩 Hỗ trợ & nạp tiền: @admxucxactele
+🕘 Online 24/24`);
 });
