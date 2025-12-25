@@ -254,13 +254,6 @@ if (win) {
     total = Math.floor(Math.random() * 8) + 3; // 3–10
   }
 }
-    // Xác định tỷ lệ thắng
-let winChance = 0.35; // user bình thường
-if (ADMINS.includes(chatId) || specialUsers.has(chatId)) winChance = 1; // admin + user đặc biệt luôn thắng
-
-const win = Math.random() < winChance;
-    let change = win ? Math.floor(user.betAmount * HOUSE_RATE) : user.betAmount;
-    user.balance += win ? change : -change;
 
     // Gửi kết quả cho user
     await bot.sendMessage(chatId,
