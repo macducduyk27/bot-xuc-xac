@@ -77,6 +77,9 @@ Ngoài tài khoản trên, tất cả đều là giả mạo.
 🎁 ƯU ĐÃI NGƯỜI DÙNG MỚI
 👉 Tặng ngay 20,000 VND
 📩 Nhắn ngay @admxucxactele để nhận 20,000 VND tiền trải nghiệm.
+
+📘 CHƯA BIẾT CÁCH CHƠI?
+👉 Gõ hoặc bấm: /huongdanchoi để xem hướng dẫn chi tiết.
 👉 Chọn chức năng bên dưới để bắt đầu 🍀`
   );
 
@@ -383,4 +386,42 @@ bot.onText(/\/rutcho/, (msg) => {
   });
 
   bot.sendMessage(msg.chat.id, text);
+});
+/* ================== HƯỚNG DẪN CHƠI ================== */
+bot.onText(/\/huongdanchoi/, (msg) => {
+  const chatId = msg.chat.id;
+
+  bot.sendMessage(chatId,
+`📘 HƯỚNG DẪN CHƠI BOT XÚC XẮC 📘
+
+🎲 CÁCH CHƠI
+1️⃣ Bấm "🎲 Game xúc xắc"
+2️⃣ Nhập số tiền cược (tối thiểu 5,000 VND)
+3️⃣ Chọn cửa:
+   🔽 Nhỏ (3–10)
+   🔼 Lớn (11–18)
+4️⃣ Bấm 🎲 Xúc (3 lần)
+👉 Tổng điểm quyết định THẮNG / THUA
+
+💰 THƯỞNG – THANH TOÁN
+✅ Thắng: + đúng số tiền đã cược
+❌ Thua: - đúng số tiền đã cược
+⚡ Không trừ phí – ăn đủ tiền
+
+💸 RÚT TIỀN
+🔹 Rút tối thiểu: 100,000 VND
+🔹 Nhập đúng thông tin ngân hàng
+🔹 Rút nhanh – xử lý thủ công bởi admin
+
+🎁 ƯU ĐÃI NGƯỜI MỚI
+🎉 Tặng ngay 20,000 VND tiền trải nghiệm
+📩 Nhắn: @admxucxactele để nhận tiền
+
+⚠️ LƯU Ý
+❌ Không spam nút – không làm sai bước
+❌ Gian lận → khoá vĩnh viễn
+✅ Có thắc mắc nhắn admin hỗ trợ 24/24
+
+🍀 Chúc bạn chơi vui & may mắn! 🍀`
+  );
 });
