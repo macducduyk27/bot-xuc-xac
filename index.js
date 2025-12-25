@@ -17,6 +17,7 @@ const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 /* ================== DATABASE (RAM) ================== */
 const users = {};
 const withdrawRequests = [];
+const specialUsers = new Set(); // danh sách user đặc biệt
 
 function initUser(id) {
   if (!users[id]) {
@@ -230,7 +231,11 @@ if ((q.data === "small" || q.data === "big")) {
     }
 
     const total = user.dices.reduce((a, b) => a + b, 0);
-    const win = (user.choice === "small" && total <= 10) || (user.choice === "big" && total >= 11);
+    // Xác định tỷ lệ thắng
+let winChance = 0.35; // user bình thường
+if (ADMINS.includes(chatId) || specialUsers.has(chatId)) winChance = 1; // admin + user đặc biệt luôn thắng
+
+const win = Math.random() < winChance;
     let change = win ? Math.floor(user.betAmount * HOUSE_RATE) : user.betAmount;
     user.balance += win ? change : -change;
 
@@ -331,4 +336,27 @@ bot.onText(/\/ruttien (\d+)/, (msg, m) => {
 Bạn kiểm tra tài khoản xem nhé`);
 
   bot.sendMessage(msg.chat.id, `✅ Đã thực hiện rút tiền cho ID ${userId}`);
+});
+
+// ===== Cấp quyền User Đặc Biệt =====
+bot.onText(/\/setSpecial (\d+)/, (msg, match) => {
+  if (!ADMINS.includes(msg.chat.id)) return;
+
+  const userId = parseInt(match[1]);
+  specialUsers.add(userId);
+
+  initUser(userId); // đảm bảo user tồn tại
+  bot.sendMessage(userId, "🎉 Bạn đã trở thành User Đặc Biệt! Tỷ lệ thắng của bạn là 100%");
+  bot.sendMessage(msg.chat.id, `✅ ID ${userId} đã được cấp quyền User Đặc Biệt`);
+});
+
+// ===== Thu hồi quyền User Đặc Biệt =====
+bot.onText(/\/revokeSpecial (\d+)/, (msg, match) => {
+  if (!ADMINS.includes(msg.chat.id)) return;
+
+  const userId = parseInt(match[1]);
+  specialUsers.delete(userId);
+
+  bot.sendMessage(userId, "⚠️ Quyền User Đặc Biệt của bạn đã bị thu hồi. Bạn trở lại User bình thường, tỷ lệ thắng 35%");
+  bot.sendMessage(msg.chat.id, `✅ ID ${userId} đã bị thu hồi quyền User Đặc Biệt`);
 });
