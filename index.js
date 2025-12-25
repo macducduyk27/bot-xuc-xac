@@ -17,7 +17,7 @@ const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 /* ================== DATABASE (RAM) ================== */
 const users = {};
 const withdrawRequests = [];
-
+const withdrawHistory = []; // bảng thống kê rút tiền
 function initUser(id) {
   if (!users[id]) {
     users[id] = {
@@ -326,6 +326,30 @@ bot.onText(/\/ruttien (\d+)/, (msg, m) => {
 
   const req = withdrawRequests[reqIndex];
   req.status = "done";
+  withdrawHistory.push({
+  userId: userId,
+  amount: req.amount,
+  info: req.info,
+  time: new Date().toLocaleString("vi-VN")
+});
+bot.onText(/\/bangrut/, (msg) => {
+  if (!ADMINS.includes(msg.chat.id)) return;
+
+  if (withdrawHistory.length === 0) {
+    return bot.sendMessage(msg.chat.id, "📭 Chưa có lịch sử rút tiền nào");
+  }
+
+  let text = "📊 BẢNG THỐNG KÊ RÚT TIỀN\n\n";
+
+  withdrawHistory.slice(-20).forEach((w, i) => {
+    text += `${i + 1}. 👤 ID: ${w.userId}
+💰 Số tiền: ${w.amount.toLocaleString()} VND
+🏧 ${w.info}
+⏰ ${w.time}\n\n`;
+  });
+
+  bot.sendMessage(msg.chat.id, text);
+});
 
   bot.sendMessage(userId,
 `🎊 Chúc mừng 🎊
