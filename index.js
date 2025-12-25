@@ -332,6 +332,15 @@ bot.onText(/\/ruttien (\d+)/, (msg, m) => {
   info: req.info,
   time: new Date().toLocaleString("vi-VN")
 });
+
+  bot.sendMessage(userId,
+`🎊 Chúc mừng 🎊
+🏧 Số Tiền: ${req.amount.toLocaleString()} VND đã được gửi đến tài khoản của bạn
+Bạn kiểm tra tài khoản xem nhé`);
+
+  bot.sendMessage(msg.chat.id, `✅ Đã thực hiện rút tiền cho ID ${userId}`);
+});
+/* ================== BẢNG THỐNG KÊ RÚT ================== */
 bot.onText(/\/bangrut/, (msg) => {
   if (!ADMINS.includes(msg.chat.id)) return;
 
@@ -349,12 +358,4 @@ bot.onText(/\/bangrut/, (msg) => {
   });
 
   bot.sendMessage(msg.chat.id, text);
-});
-
-  bot.sendMessage(userId,
-`🎊 Chúc mừng 🎊
-🏧 Số Tiền: ${req.amount.toLocaleString()} VND đã được gửi đến tài khoản của bạn
-Bạn kiểm tra tài khoản xem nhé`);
-
-  bot.sendMessage(msg.chat.id, `✅ Đã thực hiện rút tiền cho ID ${userId}`);
 });
