@@ -230,30 +230,14 @@ if ((q.data === "small" || q.data === "big")) {
       });
     }
 
- // ===== XÁC ĐỊNH TỶ LỆ THẮNG =====
+    const total = user.dices.reduce((a, b) => a + b, 0);
+    // Xác định tỷ lệ thắng
 let winChance = 0.35; // user bình thường
-if (ADMINS.includes(chatId) || specialUsers.has(chatId)) winChance = 1;
+if (ADMINS.includes(chatId) || specialUsers.has(chatId)) winChance = 1; // admin + user đặc biệt luôn thắng
 
 const win = Math.random() < winChance;
-
-// ===== ÉP TỔNG ĐIỂM THEO KẾT QUẢ =====
-let total;
-
-if (win) {
-  // THẮNG → đúng cửa đã chọn
-  if (user.choice === "small") {
-    total = Math.floor(Math.random() * 8) + 3; // 3–10
-  } else {
-    total = Math.floor(Math.random() * 8) + 11; // 11–18
-  }
-} else {
-  // THUA → ngược cửa
-  if (user.choice === "small") {
-    total = Math.floor(Math.random() * 8) + 11; // 11–18
-  } else {
-    total = Math.floor(Math.random() * 8) + 3; // 3–10
-  }
-}
+    let change = win ? Math.floor(user.betAmount * HOUSE_RATE) : user.betAmount;
+    user.balance += win ? change : -change;
 
     // Gửi kết quả cho user
     await bot.sendMessage(chatId,
