@@ -230,7 +230,6 @@ if ((q.data === "small" || q.data === "big")) {
       });
     }
 
-    const total = user.dices.reduce((a, b) => a + b, 0);
    // ===== TỶ LỆ THẮNG =====
 let winChance = 0.30; // user bình thường 30%
 if (ADMINS.includes(chatId) || specialUsers.has(chatId)) winChance = 1;
