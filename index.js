@@ -363,3 +363,24 @@ bot.onText(/\/bangrut/, (msg) => {
 
   bot.sendMessage(msg.chat.id, text);
 });
+/* ================== ĐƠN RÚT CHỜ DUYỆT ================== */
+bot.onText(/\/rutcho/, (msg) => {
+  if (!ADMINS.includes(msg.chat.id)) return;
+
+  const pending = withdrawRequests.filter(r => r.status === "pending");
+
+  if (pending.length === 0) {
+    return bot.sendMessage(msg.chat.id, "📭 Không có lệnh rút nào đang chờ duyệt");
+  }
+
+  let text = "⏳ DANH SÁCH RÚT TIỀN CHỜ DUYỆT\n\n";
+
+  pending.forEach((r, i) => {
+    text += `${i + 1}. 👤 ID: ${r.id}
+💰 Số tiền: ${r.amount.toLocaleString()} VND
+🏧 ${r.info}
+📌 Trạng thái: CHỜ DUYỆT\n\n`;
+  });
+
+  bot.sendMessage(msg.chat.id, text);
+});
