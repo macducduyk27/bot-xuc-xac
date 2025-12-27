@@ -141,22 +141,37 @@ Ví dụ: Vietcombank N.V.A 123456789`);
 
   /* ===== CHỌN GAME ===== */
   if (text === "🎲 Game Tài Xỉu") {
-    resetUserState(user);
-    user.game = "xucxac";
-    user.step = "bet_xucxac";
-    return bot.sendMessage(chatId,
-`💵 NHẬP TIỀN CƯỢC XÚC XẮC
-(min 5,000 – không giới hạn)`);
-  }
+    initUser(chatId);
+    if (user.balance < 5000) {
+        return bot.sendMessage(chatId, 
+`❌ Bạn không đủ tiền để chơi!
+👉 Hãy liên hệ @admxucxactele để nạp tiền`);
+    }
 
-  if (text === "🎲 Game Chẵn Lẻ") {
     resetUserState(user);
-    user.game = "chanle";
-    user.step = "bet_chanle";
+    user.step = "bet";
+
     return bot.sendMessage(chatId,
-`💵 NHẬP TIỀN CƯỢC CHẴN / LẺ
+`💵 NHẬP TIỀN CƯỢC
+📌 VD: 10,000 → nhập 10000
 (min 5,000 – không giới hạn)`);
-  }
+}
+
+  if (text === "🎲 Game chẵn lẻ") {
+    initUser(chatId);
+    if (user.balance < 5000) {
+        return bot.sendMessage(chatId, 
+`❌ Bạn không đủ tiền để chơi!
+👉 Hãy liên hệ @admxucxactele để nạp tiền`);
+    }
+
+    resetUserState(user);
+    user.step = "bet";
+
+    return bot.sendMessage(chatId,
+`💵 NHẬP TIỀN CƯỢC
+Tối thiểu 5,000 VND`);
+}
 
   /* ===== BET XÚC XẮC ===== */
   if (user.step === "bet_xucxac") {
