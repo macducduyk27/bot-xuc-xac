@@ -123,7 +123,7 @@ Ví dụ: rút 200,000 VND sẽ nhập 200000`);
 
   if (user.step === "withdraw_amount") {
     const amount = parseInt(text);
-    if (isNaN(amount) || amount < 200000) return bot.sendMessage(chatId, "❌ Số tiền rút tối thiểu 100,000 VND");
+    if (isNaN(amount) || amount < 200000) return bot.sendMessage(chatId, "❌ Số tiền rút tối thiểu 200,000 VND");
     if (amount > user.balance) return bot.sendMessage(chatId, "❌ Số dư không đủ");
 
     user.withdrawAmount = amount;
@@ -157,13 +157,31 @@ Vietcombank N.V.A 123456789`);
   /* ===== START GAME ===== */
   if (text === "🎲 Game xúc xắc") {
     resetUserState(user); // reset mọi state cũ
-    user.step = "bet";   // bước đặt cược mới
-    return bot.sendMessage(chatId,
-`💵 NHẬP TIỀN CƯỢC
-📌 VD: 10,000 → nhập 10000
-(min 5,000 – không giới hạn)`, {
-      reply_markup: { remove_keyboard: true }
-    });
+    if (user.step === "bet") {
+
+  // ❌ Nếu KHÔNG phải số → bỏ qua
+  if (!/^\d+$/.test(text)) return;
+
+  const amount = parseInt(text);
+
+  if (amount < 5000)
+    return bot.sendMessage(chatId, "❌ Số tiền không hợp lệ");
+
+  if (amount > user.balance)
+    return bot.sendMessage(chatId, "❌ Số dư không đủ");
+
+  user.betAmount = amount;
+  user.step = "choose";
+
+  return bot.sendMessage(chatId, "👉 Chọn cửa", {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: "🔽 Nhỏ (3–10)", callback_data: "small" }],
+        [{ text: "🔼 Lớn (11–18)", callback_data: "big" }]
+      ]
+    }
+  });
+}
   }
 
   if (user.step === "bet") {
