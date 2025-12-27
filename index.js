@@ -93,6 +93,29 @@ bot.on("message", async (msg) => {
   const text = (msg.text || "").replace(/,/g, '');
   initUser(chatId);
   const user = users[chatId];
+  if (user.step === "bet") {
+  if (!/^\d+$/.test(text)) return;
+
+  const amount = parseInt(text);
+
+  if (amount < 5000)
+    return bot.sendMessage(chatId, "❌ Số tiền không hợp lệ");
+
+  if (amount > user.balance)
+    return bot.sendMessage(chatId, "❌ Số dư không đủ");
+
+  user.betAmount = amount;
+  user.step = "choose";
+
+  return bot.sendMessage(chatId, "👉 Chọn cửa", {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: "🔽 Nhỏ (3–10)", callback_data: "small" }],
+        [{ text: "🔼 Lớn (11–18)", callback_data: "big" }]
+      ]
+    }
+  });
+}
 
   if (text === "👤 Thông tin cá nhân") {
     return bot.sendMessage(chatId,
@@ -156,33 +179,14 @@ Vietcombank N.V.A 123456789`);
 
   /* ===== START GAME ===== */
   if (text === "🎲 Game xúc xắc") {
-    resetUserState(user); // reset mọi state cũ
-    if (user.step === "bet") {
+  resetUserState(user);
+  user.step = "bet";
 
-  // ❌ Nếu KHÔNG phải số → bỏ qua
-  if (!/^\d+$/.test(text)) return;
-
-  const amount = parseInt(text);
-
-  if (amount < 5000)
-    return bot.sendMessage(chatId, "❌ Số tiền không hợp lệ");
-
-  if (amount > user.balance)
-    return bot.sendMessage(chatId, "❌ Số dư không đủ");
-
-  user.betAmount = amount;
-  user.step = "choose";
-
-  return bot.sendMessage(chatId, "👉 Chọn cửa", {
-    reply_markup: {
-      inline_keyboard: [
-        [{ text: "🔽 Nhỏ (3–10)", callback_data: "small" }],
-        [{ text: "🔼 Lớn (11–18)", callback_data: "big" }]
-      ]
-    }
-  });
+  return bot.sendMessage(chatId,
+`💵 NHẬP TIỀN CƯỢC
+📌 VD: 10,000 → nhập 10000
+(min 5,000 – không giới hạn)`);
 }
-  }
 
   if (user.step === "bet") {
     const amount = parseInt(text);
