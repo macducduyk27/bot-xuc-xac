@@ -112,7 +112,7 @@ bot.on("message", async (msg) => {
     user.step = "withdraw_amount";
     return bot.sendMessage(chatId,
 `✅ Số tiền rút tối thiểu: 200,000 VND
-🏧 Nhập số tiền muốn rút`);
+🏧 Nhập số tiền muốn rút(ví dụ: 200000)`);
   }
   if (user.step === "withdraw_amount") {
     const amount = parseInt(text);
@@ -140,8 +140,9 @@ Ví dụ: Vietcombank N.V.A 123456789`);
   }
 
   /* ===== CHỌN GAME ===== */
-  if (text === "🎲 Game Tài Xỉu") {
+if (text === "🎲 Game Tài Xỉu") {
     initUser(chatId);
+
     if (user.balance < 5000) {
         return bot.sendMessage(chatId, 
 `❌ Bạn không đủ tiền để chơi!
@@ -149,16 +150,17 @@ Ví dụ: Vietcombank N.V.A 123456789`);
     }
 
     resetUserState(user);
-    user.step = "bet";
-
+    user.game = "xucxac";       // đặt game
+    user.step = "bet_xucxac";   // bước nhập cược
     return bot.sendMessage(chatId,
 `💵 NHẬP TIỀN CƯỢC
 📌 VD: 10,000 → nhập 10000
 (min 5,000 – không giới hạn)`);
 }
 
-  if (text === "🎲 Game chẵn lẻ") {
+if (text === "🎲 Game Chẵn Lẻ") {
     initUser(chatId);
+
     if (user.balance < 5000) {
         return bot.sendMessage(chatId, 
 `❌ Bạn không đủ tiền để chơi!
@@ -166,8 +168,8 @@ Ví dụ: Vietcombank N.V.A 123456789`);
     }
 
     resetUserState(user);
-    user.step = "bet";
-
+    user.game = "chanle";       // đặt game
+    user.step = "bet_chanle";   // bước nhập cược
     return bot.sendMessage(chatId,
 `💵 NHẬP TIỀN CƯỢC
 Tối thiểu 5,000 VND`);
