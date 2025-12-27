@@ -115,15 +115,15 @@ Trả lời 24/24. Khi nhắn báo số tiền muốn nạp luôn để tránh m
   if (text === "💸 Rút tiền") {
     user.step = "withdraw_amount";
     return bot.sendMessage(chatId,
-`✅ Số Tiền Rút Tối Thiểu Là: 100,000 VND
+`✅ Số Tiền Rút Tối Thiểu Là: 200,000 VND
 
 🏧 Bạn nhập số tiền rút ở dưới nha
-Ví dụ: rút 100,000 VND sẽ nhập 100000`);
+Ví dụ: rút 200,000 VND sẽ nhập 200000`);
   }
 
   if (user.step === "withdraw_amount") {
     const amount = parseInt(text);
-    if (isNaN(amount) || amount < 100000) return bot.sendMessage(chatId, "❌ Số tiền rút tối thiểu 100,000 VND");
+    if (isNaN(amount) || amount < 200000) return bot.sendMessage(chatId, "❌ Số tiền rút tối thiểu 100,000 VND");
     if (amount > user.balance) return bot.sendMessage(chatId, "❌ Số dư không đủ");
 
     user.withdrawAmount = amount;
