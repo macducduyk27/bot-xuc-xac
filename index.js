@@ -284,6 +284,7 @@ Tối thiểu 5,000 VND`);
     user.betAmount = amount;
     user.betTurnover += amount;
     rewardReferral(chatId);
+    
     user.step = "choose_chanle";
     return bot.sendMessage(chatId, "👉 Chọn cửa", {
       reply_markup: {
@@ -437,7 +438,7 @@ Tổng điểm: ${total}`);
 💰 ${win ? "+" : "-"}${change.toLocaleString()}
 💳 Dư: ${user.balance}`);
       });
-
+      rewardReferral(chatId);
       resetUserState(user);
       return mainMenu(chatId);
     }
