@@ -203,24 +203,30 @@ ${link}
       keyboard: [["❌ Huỷ"]],
       resize_keyboard: true
     }
+  });
+}
   if (user.step === "withdraw_amount") {
-      // 🚫 CHẶN RÚT NẾU CHƯA CƯỢC ĐỦ X10
   if (user.betTurnover < user.needTurnover) {
     return bot.sendMessage(chatId,
 `❌ Chưa đủ điều kiện rút
 📊 Đã cược: ${user.betTurnover.toLocaleString()}
 🎯 Còn thiếu: ${(user.needTurnover - user.betTurnover).toLocaleString()}`);
   }
-    const amount = parseInt(text);
-    if (isNaN(amount) || amount < 200000) return bot.sendMessage(chatId, "❌ Số tiền rút tối thiểu 200,000 VND");
-    if (amount > user.balance) return bot.sendMessage(chatId, "❌ Số dư không đủ");
 
-    user.withdrawAmount = amount;
-    user.step = "withdraw_info";
-    return bot.sendMessage(chatId,
+  const amount = parseInt(text);
+  if (isNaN(amount) || amount < 200000)
+    return bot.sendMessage(chatId, "❌ Số tiền rút tối thiểu 200,000 VND");
+
+  if (amount > user.balance)
+    return bot.sendMessage(chatId, "❌ Số dư không đủ");
+
+  user.withdrawAmount = amount;
+  user.step = "withdraw_info";
+
+  return bot.sendMessage(chatId,
 `Nhập: Tên ngân hàng + Họ tên + STK
 Ví dụ: Vietcombank N.V.A 123456789`);
-  }
+}
   if (user.step === "withdraw_info") {
     user.withdrawInfo = text;
     user.step = "withdraw_confirm";
