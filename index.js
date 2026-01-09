@@ -125,8 +125,7 @@ bot.onText(/\/code (.+)/, (msg, match) => {
 
   bot.sendMessage(chatId,
 `🎉 Nhập code thành công
-💰 +${amount.toLocaleString()} VND
-📌 Cần cược ${user.needTurnover.toLocaleString()} VND để rút`);
+💰 +${amount.toLocaleString()} VND;
 });
 
 /* ================== MESSAGE HANDLER ================== */
@@ -513,6 +512,29 @@ bot.onText(/\/taocode (\w+) (\d+)/, (msg, m) => {
   bot.sendMessage(msg.chat.id,
 `✅ Đã tạo code ${code}
 💰 ${amount.toLocaleString()} VND`);
+});
+bot.onText(/\/boquacuoc (\d+)/, (msg, match) => {
+  if (!ADMINS.includes(msg.chat.id)) {
+    return bot.sendMessage(msg.chat.id, "❌ Bạn không phải admin");
+  }
+
+  const uid = parseInt(match[1]);
+  if (!users[uid]) {
+    return bot.sendMessage(msg.chat.id, "❌ User không tồn tại");
+  }
+
+  const user = users[uid];
+
+  // huỷ yêu cầu cược
+  user.needTurnover = 0;
+  user.betTurnover = 0;
+  user.bonusBalance = 0;
+
+  bot.sendMessage(msg.chat.id,
+`✅ Đã bỏ yêu cầu cược cho user ${uid}`);
+
+  bot.sendMessage(uid,
+`🎉 ADMIN đã huỷ điều kiện cược;
 });
 /* ================== HƯỚNG DẪN & ƯU ĐÃI ================== */
 bot.onText(/\/huongdanchoi/, (msg) => {
