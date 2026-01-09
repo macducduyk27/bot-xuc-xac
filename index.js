@@ -78,11 +78,23 @@ bot.onText(/\/start(?: (\d+))?/, (msg, match) => {
   initUser(chatId);
   const user = users[chatId];
 
-  // ghi nhận người mời
-  if (refId && refId !== chatId.toString() && !user.refBy) {
-    user.refBy = refId;
-  }
+  // ✅ FIX Ở ĐÂY
+  if (
+    refId &&
+    refId !== chatId.toString() &&
+    !user.refBy
+  ) {
+    initUser(refId); // 👈 BẮT BUỘC
 
+    user.refBy = refId;
+
+    users[refId].balance += 3000;
+    users[refId].invited.push(chatId);
+
+    bot.sendMessage(refId,
+`🎉 Bạn được +3,000 VND
+👤 User ${chatId} đã tham gia bot qua link mời`);
+  }
   bot.sendMessage(chatId,
 `🎉 CHÀO MỪNG BẠN ĐẾN VỚI BOT GAME 🎉
 
