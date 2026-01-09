@@ -150,6 +150,20 @@ bot.on("message", async (msg) => {
   initUser(chatId);
   const user = users[chatId];
   
+    // ⛔ XỬ LÝ HUỶ RÚT TIỀN (ĐẶT Ở ĐÂY)
+  if (text === "❌ Huỷ" && user.step && user.step.startsWith("withdraw")) {
+    resetUserState(user);
+    bot.sendMessage(chatId, "❌ Đã huỷ rút tiền");
+    return mainMenu(chatId);
+  }
+
+  // ⛔ CHẶN BẤM MENU KHÁC KHI ĐANG RÚT
+  if (user.step === "withdraw_amount" && text !== "❌ Huỷ" && !/^\d+$/.test(text)) {
+    return bot.sendMessage(chatId,
+      "❗ Vui lòng nhập số tiền muốn rút hoặc bấm ❌ Huỷ"
+    );
+  }
+  
 if (text === "🤝 Mời bạn bè") {
   const link = `https://t.me/xucxac_vn_bot?start=${chatId}`;
   return bot.sendMessage(chatId,
@@ -180,11 +194,15 @@ ${link}
 
   /* ===== RÚT TIỀN ===== */
   if (text === "💸 Rút tiền") {
-    user.step = "withdraw_amount";
-    return bot.sendMessage(chatId,
+  user.step = "withdraw_amount";
+  return bot.sendMessage(chatId,
 `✅ Số tiền rút tối thiểu: 200,000 VND
-🏧 Nhập số tiền muốn rút(ví dụ: 200000)`);
-  }
+🏧 Nhập số tiền muốn rút (vd: 200000)
+❌ Gõ Huỷ để quay lại menu`, {
+    reply_markup: {
+      keyboard: [["❌ Huỷ"]],
+      resize_keyboard: true
+    }
   if (user.step === "withdraw_amount") {
       // 🚫 CHẶN RÚT NẾU CHƯA CƯỢC ĐỦ X10
   if (user.betTurnover < user.needTurnover) {
