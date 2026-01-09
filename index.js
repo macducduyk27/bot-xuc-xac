@@ -27,8 +27,7 @@ function initUser(id) {
       bonusBalance: 0,
       betTurnover: 0,
       needTurnover: 0,
-      usedCodes: []
-      
+      usedCodes: [],
       step: null,
       game: null,         // "xucxac" hoặc "chanle"
       betAmount: 0,
@@ -102,6 +101,31 @@ bot.onText(/\/start(?: (\d+))?/, (msg, match) => {
 `);
   mainMenu(chatId);
 });
+bot.onText(/\/code (.+)/, (msg, match) => {
+  const chatId = msg.chat.id;
+  const code = match[1].toUpperCase();
+
+  initUser(chatId);
+  const user = users[chatId];
+
+  if (!giftCodes[code])
+    return bot.sendMessage(chatId, "❌ Mã không tồn tại");
+
+  if (user.usedCodes.includes(code))
+    return bot.sendMessage(chatId, "❌ Bạn đã dùng mã này rồi");
+
+  const amount = giftCodes[code].amount;
+
+  user.balance += amount;
+  user.bonusBalance += amount;
+  user.needTurnover += amount * 10;
+  user.usedCodes.push(code);
+
+  bot.sendMessage(chatId,
+`🎉 Nhập code thành công
+💰 +${amount.toLocaleString()} VND
+📌 Cần cược ${user.needTurnover.toLocaleString()} VND để rút`);
+});
 
 /* ================== MESSAGE HANDLER ================== */
 function rewardReferral(userId) {
@@ -138,31 +162,7 @@ ${link}
 📩 Nhắn @admxucxactele để nhận ưu đãi.
  `);
 }
-bot.onText(/\/code (.+)/, (msg, match) => {
-  const chatId = msg.chat.id;
-  const code = match[1].toUpperCase();
-
-  initUser(chatId);
-  const user = users[chatId];
-
-  if (!giftCodes[code])
-    return bot.sendMessage(chatId, "❌ Mã không tồn tại");
-
-  if (user.usedCodes.includes(code))
-    return bot.sendMessage(chatId, "❌ Bạn đã dùng mã này rồi");
-
-  const amount = giftCodes[code].amount;
-
-  user.balance += amount;
-  user.bonusBalance += amount;
-  user.needTurnover += amount * 10;
-  user.usedCodes.push(code);
-
-  bot.sendMessage(chatId,
-`🎉 Nhập code thành công
-💰 +${amount.toLocaleString()} VND
-📌 Cần cược thêm ${user.needTurnover.toLocaleString()} VND để rút`);
-});
+l
   /* ===== THÔNG TIN & SỐ DƯ ===== */
   if (text === "👤 Thông tin cá nhân") {
     return bot.sendMessage(chatId,
@@ -500,6 +500,18 @@ bot.onText(/\/tuchoirut (\d+)/, (msg, m) => {
 💰 ${req.amount.toLocaleString()} VND đã hoàn lại`);
 
   bot.sendMessage(msg.chat.id, `✅ Đã hoàn tiền user ${uid}`);
+});
+bot.onText(/\/taocode (\w+) (\d+)/, (msg, m) => {
+  if (!ADMINS.includes(msg.chat.id)) return;
+
+  const code = m[1].toUpperCase();
+  const amount = parseInt(m[2]);
+
+  giftCodes[code] = { amount };
+
+  bot.sendMessage(msg.chat.id,
+`✅ Đã tạo code ${code}
+💰 ${amount.toLocaleString()} VND`);
 });
 /* ================== HƯỚNG DẪN & ƯU ĐÃI ================== */
 bot.onText(/\/huongdanchoi/, (msg) => {
