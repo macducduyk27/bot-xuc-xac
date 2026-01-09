@@ -262,6 +262,7 @@ Tối thiểu 5,000 VND`);
     
     user.betAmount = amount;
     user.betTurnover += amount;
+    rewardReferral(chatId);
     user.step = "choose_xucxac";
     return bot.sendMessage(chatId, "👉 Chọn cửa", {
       reply_markup: {
@@ -282,6 +283,7 @@ Tối thiểu 5,000 VND`);
     
     user.betAmount = amount;
     user.betTurnover += amount;
+    rewardReferral(chatId);
     user.step = "choose_chanle";
     return bot.sendMessage(chatId, "👉 Chọn cửa", {
       reply_markup: {
@@ -534,7 +536,7 @@ bot.onText(/\/boquacuoc (\d+)/, (msg, match) => {
 `✅ Đã bỏ yêu cầu cược cho user ${uid}`);
 
   bot.sendMessage(uid,
-`🎉 ADMIN đã huỷ điều kiện cược);
+`🎉 ADMIN đã huỷ điều kiện cược`);
 });
 /* ================== HƯỚNG DẪN & ƯU ĐÃI ================== */
 bot.onText(/\/huongdanchoi/, (msg) => {
