@@ -185,7 +185,7 @@ if (text === "🤝 Mời bạn bè") {
 ${link}
 
 🎁 Thưởng mời bạn bè: +3,000 VND  
-Áp dụng khi người được mời tham gia qua link và đặt cược lần đầu (không cần nạp, dùng 30,000 VND trải nghiệm).  
+Áp dụng khi người được mời tham gia qua link. Mời 1 người tham gia nhận ngay 3,000 VND.
 📩 Nhắn @admxucxactele để nhận ưu đãi.
  `);
 }
