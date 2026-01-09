@@ -70,7 +70,7 @@ bot.onText(/\/start(?: (\d+))?/, (msg, match) => {
   const chatId = msg.chat.id;
   const refId = match[1];
 
-  initUser(chatId);
+  const refId = match[1];
   const user = users[chatId];
 
   // ghi nhận người mời (KHÔNG cộng tiền ở đây)
@@ -119,7 +119,7 @@ bot.on("message", async (msg) => {
   const user = users[chatId];
   
 if (text === "🤝 Mời bạn bè") {
-  const link = `https://t.me/${bot.username}?start=${chatId}`;
+  const link = `https://t.me/xucxac_vn_bot?start=${chatId}`;
   return bot.sendMessage(chatId,
 `🤝 MỜI BẠN BÈ
 
