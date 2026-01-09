@@ -126,7 +126,9 @@ if (text === "🤝 Mời bạn bè") {
 🔗 Link mời của bạn:
 ${link}
 
-🎁 Thưởng: +3,000 VND khi bạn mời thành công người tham gia vô đường link bạn gửi và cược lần đầu game cho khuyến mại 30k trải nghiệm nên chỉ cần đặt cược không phải nạp (Báo user nhắn @admxucxactele để nhận ưu đãi)
+🎁 Thưởng mời bạn bè: +3,000 VND  
+Áp dụng khi người được mời tham gia qua link và đặt cược lần đầu (không cần nạp, dùng 30,000 VND trải nghiệm).  
+📩 Nhắn @admxucxactele để nhận ưu đãi.
  `);
 }
   /* ===== THÔNG TIN & SỐ DƯ ===== */
