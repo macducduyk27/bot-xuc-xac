@@ -16,6 +16,7 @@ const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
 /* ================== DATABASE (RAM) ================== */
 const users = {};
+const giftCodes = {};
 const withdrawRequests = [];
 const withdrawHistory = [];
 
@@ -23,6 +24,11 @@ function initUser(id) {
   if (!users[id]) {
     users[id] = {
       balance: 0,
+      bonusBalance: 0,
+      betTurnover: 0,
+      needTurnover: 0,
+      usedCodes: []
+      
       step: null,
       game: null,         // "xucxac" hoặc "chanle"
       betAmount: 0,
@@ -132,6 +138,31 @@ ${link}
 📩 Nhắn @admxucxactele để nhận ưu đãi.
  `);
 }
+bot.onText(/\/code (.+)/, (msg, match) => {
+  const chatId = msg.chat.id;
+  const code = match[1].toUpperCase();
+
+  initUser(chatId);
+  const user = users[chatId];
+
+  if (!giftCodes[code])
+    return bot.sendMessage(chatId, "❌ Mã không tồn tại");
+
+  if (user.usedCodes.includes(code))
+    return bot.sendMessage(chatId, "❌ Bạn đã dùng mã này rồi");
+
+  const amount = giftCodes[code].amount;
+
+  user.balance += amount;
+  user.bonusBalance += amount;
+  user.needTurnover += amount * 10;
+  user.usedCodes.push(code);
+
+  bot.sendMessage(chatId,
+`🎉 Nhập code thành công
+💰 +${amount.toLocaleString()} VND
+📌 Cần cược thêm ${user.needTurnover.toLocaleString()} VND để rút`);
+});
   /* ===== THÔNG TIN & SỐ DƯ ===== */
   if (text === "👤 Thông tin cá nhân") {
     return bot.sendMessage(chatId,
@@ -155,6 +186,13 @@ ${link}
 🏧 Nhập số tiền muốn rút(ví dụ: 200000)`);
   }
   if (user.step === "withdraw_amount") {
+      // 🚫 CHẶN RÚT NẾU CHƯA CƯỢC ĐỦ X10
+  if (user.betTurnover < user.needTurnover) {
+    return bot.sendMessage(chatId,
+`❌ Chưa đủ điều kiện rút
+📊 Đã cược: ${user.betTurnover.toLocaleString()}
+🎯 Còn thiếu: ${(user.needTurnover - user.betTurnover).toLocaleString()}`);
+  }
     const amount = parseInt(text);
     if (isNaN(amount) || amount < 200000) return bot.sendMessage(chatId, "❌ Số tiền rút tối thiểu 200,000 VND");
     if (amount > user.balance) return bot.sendMessage(chatId, "❌ Số dư không đủ");
@@ -223,6 +261,7 @@ Tối thiểu 5,000 VND`);
     if (amount > user.balance) return bot.sendMessage(chatId, "❌ Số dư không đủ");
     
     user.betAmount = amount;
+    user.betTurnover += amount;
     user.step = "choose_xucxac";
     return bot.sendMessage(chatId, "👉 Chọn cửa", {
       reply_markup: {
@@ -242,6 +281,7 @@ Tối thiểu 5,000 VND`);
     if (amount > user.balance) return bot.sendMessage(chatId, "❌ Số dư không đủ");
     
     user.betAmount = amount;
+    user.betTurnover += amount;
     user.step = "choose_chanle";
     return bot.sendMessage(chatId, "👉 Chọn cửa", {
       reply_markup: {
@@ -441,6 +481,26 @@ bot.onText(/\/bangrut/, (msg) => {
   bot.sendMessage(msg.chat.id, text);
 });
 
+bot.onText(/\/tuchoirut (\d+)/, (msg, m) => {
+  if (!ADMINS.includes(msg.chat.id)) return;
+
+  const uid = parseInt(m[1]);
+  const index = withdrawRequests.findIndex(r => r.id === uid);
+
+  if (index === -1)
+    return bot.sendMessage(msg.chat.id, "❌ Không tìm thấy yêu cầu");
+
+  const req = withdrawRequests[index];
+  initUser(uid);
+  users[uid].balance += req.amount;
+  withdrawRequests.splice(index, 1);
+
+  bot.sendMessage(uid,
+`❌ Yêu cầu rút tiền bị từ chối
+💰 ${req.amount.toLocaleString()} VND đã hoàn lại`);
+
+  bot.sendMessage(msg.chat.id, `✅ Đã hoàn tiền user ${uid}`);
+});
 /* ================== HƯỚNG DẪN & ƯU ĐÃI ================== */
 bot.onText(/\/huongdanchoi/, (msg) => {
   const chatId = msg.chat.id;
