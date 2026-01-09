@@ -96,6 +96,7 @@ bot.onText(/\/start(?: (\d+))?/, (msg, match) => {
 👉 Tặng ngay 30,000 VND
 📩 Nhắn trong BOT: /code 30ktrainghiem
    Sẽ được cộng trực tiếp để tham gia trò chơi.
+  
 
 📌 Gõ /huongdanchoi để xem hướng dẫn chi tiết
 📌 Gõ /uudai để xem ưu đãi
@@ -163,7 +164,6 @@ ${link}
 📩 Nhắn @admxucxactele để nhận ưu đãi.
  `);
 }
-l
   /* ===== THÔNG TIN & SỐ DƯ ===== */
   if (text === "👤 Thông tin cá nhân") {
     return bot.sendMessage(chatId,
