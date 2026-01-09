@@ -139,7 +139,33 @@ bot.onText(/\/code (.+)/, (msg, match) => {
 `🎉 Nhập code thành công
 💰 +${amount.toLocaleString()} VND`);
 });
+bot.onText(/\/chuyentien (\d+) (\d+)/, (msg, match) => {
+  const fromId = msg.chat.id;
+  const toId = match[1];
+  const amount = parseInt(match[2]);
 
+  // ❌ Chặn tự chuyển cho chính mình
+  if (fromId.toString() === toId)
+    return bot.sendMessage(fromId, "❌ Không thể tự chuyển cho chính bạn");
+
+  initUser(fromId);
+  initUser(toId);
+
+  const fromUser = users[fromId];
+  const toUser = users[toId];
+
+  if (amount <= 0)
+    return bot.sendMessage(fromId, "❌ Số tiền không hợp lệ");
+
+  if (fromUser.balance < amount)
+    return bot.sendMessage(fromId, "❌ Số dư không đủ");
+
+  fromUser.balance -= amount;
+  toUser.balance += amount;
+
+  bot.sendMessage(fromId, `✅ Chuyển tiền thành công`);
+  bot.sendMessage(toId, `🎉 Bạn nhận được ${amount.toLocaleString()} VND`);
+});
 /* ================== MESSAGE HANDLER ================== */
 function rewardReferral(userId) {
   const user = users[userId];
