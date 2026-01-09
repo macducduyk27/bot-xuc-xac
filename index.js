@@ -30,7 +30,10 @@ function initUser(id) {
       dices: [],
       playing: false,
       withdrawAmount: 0,
-      withdrawInfo: ""
+      withdrawInfo: "",
+      refBy: null,     // 👈 thêm
+      invited: [],     // 👈 thêm
+      hasBet: false
     };
   }
 }
@@ -54,7 +57,8 @@ function mainMenu(chatId) {
         ["👤 Thông tin cá nhân"],
         ["🎲 Game Tài Xỉu", "🎲 Game Chẵn Lẻ"],
         ["💳 Nạp tiền"],
-        ["💰 Số dư", "💸 Rút tiền"]
+        ["💰 Số dư", "💸 Rút tiền"],
+        ["🤝 Mời bạn bè"]
       ],
       resize_keyboard: true
     }
@@ -62,10 +66,17 @@ function mainMenu(chatId) {
 }
 
 /* ================== START ================== */
-bot.onText(/\/start/, (msg) => {
+bot.onText(/\/start(?: (\d+))?/, (msg, match) => {
   const chatId = msg.chat.id;
-  initUser(chatId);
+  const refId = match[1];
 
+  initUser(chatId);
+  const user = users[chatId];
+
+  // ghi nhận người mời (KHÔNG cộng tiền ở đây)
+  if (refId && refId !== chatId.toString() && !user.refBy) {
+    user.refBy = refId;
+  }
   bot.sendMessage(chatId,
 `🎉 CHÀO MỪNG BẠN ĐẾN VỚI BOT GAME 🎉
 
@@ -76,7 +87,7 @@ bot.onText(/\/start/, (msg) => {
 🔒 Hệ thống tự động – bảo mật
 
 🎁 ƯU ĐÃI NGƯỜI DÙNG MỚI
-👉 Tặng ngay 20,000 VND
+👉 Tặng ngay 30,000 VND
 📩 Nhắn @admxucxactele để nhận tiền trải nghiệm.
 
 📌 Gõ /huongdanchoi để xem hướng dẫn chi tiết
@@ -86,12 +97,38 @@ bot.onText(/\/start/, (msg) => {
 });
 
 /* ================== MESSAGE HANDLER ================== */
+function rewardReferral(userId) {
+  const user = users[userId];
+  if (!user || user.hasBet) return;
+
+  user.hasBet = true;
+
+  if (user.refBy) {
+    initUser(user.refBy);
+    users[user.refBy].balance += 3000;
+
+    bot.sendMessage(user.refBy,
+`🎉 Bạn được +3,000 VND vì mời bạn thành công
+👤 ID: ${userId}`);
+  }
+}
 bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
   const text = (msg.text || "").replace(/,/g, '');
   initUser(chatId);
   const user = users[chatId];
+  
+if (text === "🤝 Mời bạn bè") {
+  const link = `https://t.me/${bot.username}?start=${chatId}`;
+  return bot.sendMessage(chatId,
+`🤝 MỜI BẠN BÈ
 
+🔗 Link mời của bạn:
+${link}
+
+🎁 Thưởng: +3,000 VND khi bạn mời thành công người tham gia vô đường link bạn gửi và cược lần đầu game cho khuyến mại 30k trải nghiệm nên chỉ cần đặt cược không phải nạp (Báo user nhắn @admxucxactele để nhận ưu đãi)
+ `);
+}
   /* ===== THÔNG TIN & SỐ DƯ ===== */
   if (text === "👤 Thông tin cá nhân") {
     return bot.sendMessage(chatId,
@@ -181,7 +218,9 @@ Tối thiểu 5,000 VND`);
     const amount = parseInt(text);
     if (amount < 5000) return bot.sendMessage(chatId, "❌ Cược tối thiểu 5,000");
     if (amount > user.balance) return bot.sendMessage(chatId, "❌ Số dư không đủ");
-
+    
+     rewardReferral(chatId);
+    
     user.betAmount = amount;
     user.step = "choose_xucxac";
     return bot.sendMessage(chatId, "👉 Chọn cửa", {
@@ -200,7 +239,9 @@ Tối thiểu 5,000 VND`);
     const amount = parseInt(text);
     if (amount < 5000) return bot.sendMessage(chatId, "❌ Cược tối thiểu 5,000");
     if (amount > user.balance) return bot.sendMessage(chatId, "❌ Số dư không đủ");
-
+    
+     rewardReferral(chatId);
+    
     user.betAmount = amount;
     user.step = "choose_chanle";
     return bot.sendMessage(chatId, "👉 Chọn cửa", {
@@ -421,7 +462,7 @@ bot.onText(/\/huongdanchoi/, (msg) => {
 
 💰 Thắng / Thua: tiền cược được cộng / trừ ngay
 💸 Rút tiền: tối thiểu 200,000 VND
-🎁 Ưu đãi: tặng 20,000 VND cho người mới`);
+🎁 Ưu đãi: tặng 30,000 VND cho người mới`);
 });
 
 bot.onText(/\/uudai/, (msg) => {
@@ -429,7 +470,7 @@ bot.onText(/\/uudai/, (msg) => {
   bot.sendMessage(chatId,
 `🎁 ƯU ĐÃI BOT
 
-🎉 Người mới: tặng 20,000 VND
+🎉 Người mới: tặng 30,000 VND
 💰 Nạp lần đầu: +50% số tiền
 📩 Nhắn @admxucxactele để nhận ưu đãi
 🕘 Online 24/24`);
