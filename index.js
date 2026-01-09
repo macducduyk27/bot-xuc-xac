@@ -70,13 +70,14 @@ bot.onText(/\/start(?: (\d+))?/, (msg, match) => {
   const chatId = msg.chat.id;
   const refId = match[1];
 
-  const refId = match[1];
+  initUser(chatId);
   const user = users[chatId];
 
-  // ghi nhận người mời (KHÔNG cộng tiền ở đây)
+  // ghi nhận người mời
   if (refId && refId !== chatId.toString() && !user.refBy) {
     user.refBy = refId;
   }
+
   bot.sendMessage(chatId,
 `🎉 CHÀO MỪNG BẠN ĐẾN VỚI BOT GAME 🎉
 
@@ -221,8 +222,6 @@ Tối thiểu 5,000 VND`);
     if (amount < 5000) return bot.sendMessage(chatId, "❌ Cược tối thiểu 5,000");
     if (amount > user.balance) return bot.sendMessage(chatId, "❌ Số dư không đủ");
     
-     rewardReferral(chatId);
-    
     user.betAmount = amount;
     user.step = "choose_xucxac";
     return bot.sendMessage(chatId, "👉 Chọn cửa", {
@@ -241,8 +240,6 @@ Tối thiểu 5,000 VND`);
     const amount = parseInt(text);
     if (amount < 5000) return bot.sendMessage(chatId, "❌ Cược tối thiểu 5,000");
     if (amount > user.balance) return bot.sendMessage(chatId, "❌ Số dư không đủ");
-    
-     rewardReferral(chatId);
     
     user.betAmount = amount;
     user.step = "choose_chanle";
