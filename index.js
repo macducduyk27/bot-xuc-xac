@@ -125,7 +125,7 @@ bot.onText(/\/code (.+)/, (msg, match) => {
 
   bot.sendMessage(chatId,
 `🎉 Nhập code thành công
-💰 +${amount.toLocaleString()} VND;
+💰 +${amount.toLocaleString()} VND`);
 });
 
 /* ================== MESSAGE HANDLER ================== */
@@ -534,7 +534,7 @@ bot.onText(/\/boquacuoc (\d+)/, (msg, match) => {
 `✅ Đã bỏ yêu cầu cược cho user ${uid}`);
 
   bot.sendMessage(uid,
-`🎉 ADMIN đã huỷ điều kiện cược;
+`🎉 ADMIN đã huỷ điều kiện cược);
 });
 /* ================== HƯỚNG DẪN & ƯU ĐÃI ================== */
 bot.onText(/\/huongdanchoi/, (msg) => {
