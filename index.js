@@ -431,32 +431,41 @@ bot.on("callback_query", async (q) => {
         });
       }
 
-      const total = user.dices.reduce((a,b)=>a+b,0);
-      const win = (user.choice === "small" && total <= 10) || (user.choice === "big" && total >= 11);
-      const change = user.betAmount;
-      user.balance += win ? change : -change;
+      if (user.dices.length === 3) {
+  const total = user.dices.reduce((a,b)=>a+b,0);
+  const win =
+    (user.choice === "small" && total <= 10) ||
+    (user.choice === "big" && total >= 11);
 
-      await bot.sendMessage(chatId,
+  const change = user.betAmount;
+
+  await bot.sendMessage(chatId, "⏳ Đang tổng hợp kết quả, vui lòng chờ 10 giây...");
+
+  setTimeout(async () => {
+    user.balance += win ? change : -change;
+
+    await bot.sendMessage(chatId,
 `🎲 KẾT QUẢ XÚC XẮC
 👤 ID: ${chatId}
-🎯 Cửa: ${win ? "Thắng" : "Thua"}
-📊 Kết quả: ${win ? "+" : "-"} ${change.toLocaleString()} VND
-💰 Số dư: ${user.balance.toLocaleString()}
-Tổng điểm: ${total}`);
-
-      ADMINS.forEach(aid => {
-        bot.sendMessage(aid,
-`📊 LOG XÚC XẮC
-👤 ID USER: ${chatId}
-💵 Tiền cược: ${user.betAmount}
-🎯 Cửa: ${user.choice}
+🎯 Kết quả: ${win ? "THẮNG" : "THUA"}
+📊 ${win ? "+" : "-"} ${change.toLocaleString()} VND
 🎲 Tổng điểm: ${total}
-💰 Dư còn lại: ${user.balance}`);
-      });
+💰 Số dư: ${user.balance.toLocaleString()}`);
 
-      resetUserState(user);
-      return mainMenu(chatId);
-    }
+    ADMINS.forEach(aid => {
+      bot.sendMessage(aid,
+`📊 LOG XÚC XẮC
+👤 ID: ${chatId}
+🎯 Cửa: ${user.choice}
+🎲 Tổng: ${total}
+💰 Dư: ${user.balance}`);
+    });
+
+    resetUserState(user);
+    mainMenu(chatId);
+
+  }, 10000); // ⏱️ 10 GIÂY
+}
   }
 
   /* ===== CALLBACK CHẴN LẺ ===== */
@@ -477,13 +486,20 @@ Tổng điểm: ${total}`);
 
     if (q.data === "roll_chanle" && user.playing) {
       const dice = await bot.sendDice(chatId);
-      const value = dice.dice.value;
-      const isEven = value % 2 === 0;
-      const win = (user.choice === "even" && isEven) || (user.choice === "odd" && !isEven);
-      const change = user.betAmount;
-      user.balance += win ? change : -change;
+const value = dice.dice.value;
+const isEven = value % 2 === 0;
+const win =
+  (user.choice === "even" && isEven) ||
+  (user.choice === "odd" && !isEven);
 
-      await bot.sendMessage(chatId,
+const change = user.betAmount;
+
+await bot.sendMessage(chatId, "⏳ Đang tổng hợp kết quả, vui lòng chờ 10 giây...");
+
+setTimeout(async () => {
+  user.balance += win ? change : -change;
+
+  await bot.sendMessage(chatId,
 `🎲 KẾT QUẢ CHẴN / LẺ
 🎯 Xúc: ${value}
 📌 Bạn chọn: ${user.choice === "even" ? "CHẴN" : "LẺ"}
@@ -491,19 +507,20 @@ Tổng điểm: ${total}`);
 💰 ${win ? "+" : "-"}${change.toLocaleString()} VND
 💳 Số dư: ${user.balance.toLocaleString()}`);
 
-      ADMINS.forEach(aid => {
-        bot.sendMessage(aid,
+  ADMINS.forEach(aid => {
+    bot.sendMessage(aid,
 `📊 LOG CHẴN LẺ
 👤 ID: ${chatId}
 🎲 Xúc: ${value}
 🎯 Cửa: ${user.choice}
 💰 ${win ? "+" : "-"}${change.toLocaleString()}
 💳 Dư: ${user.balance}`);
-      });
-      rewardReferral(chatId);
-      resetUserState(user);
-      return mainMenu(chatId);
-    }
+  });
+
+  resetUserState(user);
+  mainMenu(chatId);
+
+}, 10000); // ⏱️ 10 GIÂY
   }
 });
 
