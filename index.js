@@ -440,7 +440,7 @@ bot.on("callback_query", async (q) => {
   const change = user.betAmount;
 
   await bot.sendMessage(chatId, "⏳ Đang tổng hợp kết quả, vui lòng chờ 10 giây...");
-
+user.playing = false;
   setTimeout(async () => {
     user.balance += win ? change : -change;
 
@@ -495,7 +495,7 @@ const win =
 const change = user.betAmount;
 
 await bot.sendMessage(chatId, "⏳ Đang tổng hợp kết quả, vui lòng chờ 10 giây...");
-
+user.playing = false;
 setTimeout(async () => {
   user.balance += win ? change : -change;
 
